@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "916041705930",
+    "project_id": "remus-fc856",
+    "storage_bucket": "remus-fc856.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916041705930:android:e64a20e1a76fd483af8733",
+        "android_client_info": {
+          "package_name": "com.espindola.remus.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMTLC2SC4weXtOH7KnVJ1KuE9MUi933_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916041705930:android:4af78f1340e1cfffaf8733",
+        "android_client_info": {
+          "package_name": "com.espindola.remus.app.qa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMTLC2SC4weXtOH7KnVJ1KuE9MUi933_E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
