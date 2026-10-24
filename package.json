@@ -10,6 +10,7 @@
     "ios:qa": "react-native run-ios --scheme RemusAppQA --mode \"Debug QA\"",
     "ios:prod": "react-native run-ios --scheme RemusApp --mode Debug",
     "lint": "eslint .",
+    "verify": "npm test -- --runInBand && tsc --noEmit && npm run lint -- --max-warnings=0",
     "start": "react-native start",
     "test": "jest",
     "firebase:verify": "python3 scripts/verify_firebase_configs.py"
@@ -21,7 +22,8 @@
     "@react-native/new-app-screen": "0.88.0",
     "react": "19.3.0",
     "react-native": "0.88.0",
-    "react-native-safe-area-context": "^5.5.2"
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-svg": "15.16.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

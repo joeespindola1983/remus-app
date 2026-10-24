@@ -6,6 +6,7 @@
  */
 
 import { NewAppScreen } from '@react-native/new-app-screen';
+import { DesignSystemPreview } from './src/design-system/dev/DesignSystemPreview';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
 import {
   SafeAreaProvider,
@@ -17,7 +18,9 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      {!__DEV__ && (
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      )}
       <AppContent />
     </SafeAreaProvider>
   );
@@ -28,10 +31,14 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
+      {__DEV__ ? (
+        <DesignSystemPreview />
+      ) : (
+        <NewAppScreen
+          templateFileName="App.tsx"
+          safeAreaInsets={safeAreaInsets}
+        />
+      )}
     </View>
   );
 }
