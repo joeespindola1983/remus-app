@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { type DesignColorMode } from '../tokens';
 import { RemusIcon } from './RemusIcon';
+import { RemusLoadingIcon } from './RemusLoadingIcon';
 import { type RemusIconName } from './remusIconDefinition';
 import {
   createIconButtonInteraction,
@@ -19,13 +20,13 @@ export type RemusIconButtonProps = {
   variant?: IconButtonVariant;
   mode?: DesignColorMode;
   disabled?: boolean;
+  loading?: boolean;
   testID?: string;
 };
 
 /**
  * Figma Icon Button: 40 / 50 / 56 px circular outlines, 72 px solid workout FAB.
- * Phase 1: Neutral & Primary, default/pressed/disabled. Warning, destructive,
- * and loading follow once their semantic states have been verified.
+ * Four semantic variants; loading replaces the icon and blocks onPress.
  */
 export function RemusIconButton({
   icon,
@@ -35,11 +36,13 @@ export function RemusIconButton({
   variant = 'primary',
   mode = 'athleteLight',
   disabled = false,
+  loading = false,
   testID,
 }: RemusIconButtonProps) {
   const interaction = createIconButtonInteraction({
     accessibilityLabel,
     disabled,
+    loading,
     onPress,
   });
   const appearance = (pressed: boolean) => getIconButtonAppearance({
@@ -57,13 +60,15 @@ export function RemusIconButton({
       hitSlop={size === 'small' ? 4 : undefined}
       style={({ pressed }) => [styles.button, appearance(pressed)]}
     >
-      {({ pressed }) => (
-        <RemusIcon
-          name={icon}
-          size={appearance(pressed).iconSize}
-          strokeColor={appearance(pressed).iconColor}
-        />
-      )}
+      {({ pressed }) => loading
+        ? <RemusLoadingIcon color={appearance(false).iconColor} size={appearance(false).iconSize} />
+        : (
+          <RemusIcon
+            name={icon}
+            size={appearance(pressed).iconSize}
+            strokeColor={appearance(pressed).iconColor}
+          />
+        )}
     </Pressable>
   );
 }

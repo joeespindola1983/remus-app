@@ -179,6 +179,63 @@ export function DesignSystemPreview() {
         </View>
 
         <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Icon Button — avançado</Text>
+          <Text style={[styles.description, { color: theme.secondaryText }]}>
+            Warning · Destructive · Loading. Loading substitui o ícone e bloqueia ações.
+          </Text>
+          <View style={styles.iconButtonGrid}>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="close" variant="warning" mode={mode}
+                accessibilityLabel="Alerta" testID="icon-button-warning"
+                onPress={() => setLastAction('Icon Button: alerta')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Warning</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="close" variant="destructive" mode={mode}
+                accessibilityLabel="Excluir" testID="icon-button-destructive"
+                onPress={() => setLastAction('Icon Button: excluir')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Destructive</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="start" variant="primary" loading mode={mode}
+                accessibilityLabel="Carregando atividade" testID="icon-button-loading"
+                onPress={() => setLastAction('ERRO: loading')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Loading</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="close" size="workout" variant="destructive" mode={mode}
+                accessibilityLabel="Parar atividade" testID="icon-button-workout-destructive"
+                onPress={() => setLastAction('Icon Button: parar')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Workout</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="close" size="workout" variant="warning" mode={mode}
+                accessibilityLabel="Atenção durante o treino" testID="icon-button-workout-warning"
+                onPress={() => setLastAction('Icon Button: alerta treino')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Warning 72</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="stop" size="workout" variant="destructive" loading mode={mode}
+                accessibilityLabel="Finalizando treino" testID="icon-button-workout-loading"
+                onPress={() => setLastAction('ERRO: loading workout')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Loading 72</RemusText>
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Estados</Text>
           <Text style={[styles.description, { color: theme.secondaryText }]}>
             Pressione e segure o botão ativo para ver Pressed.
@@ -195,7 +252,7 @@ export function DesignSystemPreview() {
           Última ação: {lastAction}
         </Text>
         <Text style={[styles.footer, { color: theme.secondaryText }]}>
-          Loading e outras variantes entram nos próximos incrementos.
+          Próximos incrementos: outros átomos e componentes compostos.
         </Text>
       </ScrollView>
     </SafeAreaView>

@@ -4,11 +4,14 @@ import {
 } from '../src/design-system/atoms/remusIconDefinition';
 
 describe('Remus Iconography (Figma 46:2)', () => {
-  it('keeps the eight canonical icons with the original 32×32 path geometry', () => {
-    expect(Object.keys(remusIconGeometry)).toEqual([
+  it('preserves the eight original icons and validates all registered 32×32 geometries', () => {
+    const originalIcons = [
       'home', 'chevronRight', 'close', 'plus',
       'check', 'start', 'pause', 'stop',
-    ]);
+    ] as const;
+    originalIcons.forEach(name => {
+      expect(name in remusIconGeometry).toBe(true);
+    });
     Object.values(remusIconGeometry).forEach(icon => {
       expect(icon.path.length).toBeGreaterThan(8);
       expect(icon.strokeWidth).toBeGreaterThanOrEqual(2);

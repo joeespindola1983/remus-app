@@ -9,7 +9,7 @@ export const iconButtonSizes = {
 } as const;
 
 export type IconButtonSize = keyof typeof iconButtonSizes;
-export type IconButtonVariant = 'neutral' | 'primary';
+export type IconButtonVariant = 'neutral' | 'primary' | 'warning' | 'destructive';
 
 export function getIconButtonAppearance({
   size = 'medium',
@@ -28,11 +28,20 @@ export function getIconButtonAppearance({
   const diameter = iconButtonSizes[size];
   const activeColor = variant === 'neutral'
     ? palette.accent
-    : pressed
-      ? palette.primaryPressed
-      : palette.primary;
+    : variant === 'primary'
+      ? pressed ? palette.primaryPressed : palette.primary
+      : variant === 'warning'
+        ? pressed ? palette.warningPressed : palette.warning
+        : pressed ? palette.destructivePressed : palette.destructive;
   const color = disabled ? palette.disabled : activeColor;
   const filled = size === 'workout';
+  const onFilled = variant === 'neutral'
+    ? palette.onAccent
+    : variant === 'primary'
+      ? palette.background
+      : variant === 'warning'
+        ? pressed && !disabled ? palette.onWarningPressed : palette.onWarning
+        : palette.onDestructive;
 
   return {
     width: diameter,
@@ -41,14 +50,8 @@ export function getIconButtonAppearance({
     borderWidth: filled ? 0 : stroke.emphasis,
     borderColor: color,
     backgroundColor: filled ? color : 'transparent',
-    // On filled neutral workout controls use the high-contrast on-accent token.
-    iconColor: filled
-      ? variant === 'neutral'
-        ? palette.onAccent
-        : disabled
-          ? palette.primary
-          : palette.background
-      : color,
+    // Filled Workout controls use their semantic on-color for contrast.
+    iconColor: filled ? onFilled : color,
     iconSize: 32,
     opacity: disabled ? 0.42 : pressed ? 0.86 : 1,
   };
@@ -57,17 +60,20 @@ export function getIconButtonAppearance({
 export function createIconButtonInteraction({
   accessibilityLabel,
   disabled = false,
+  loading = false,
   onPress,
 }: {
   accessibilityLabel: string;
   disabled?: boolean;
+  loading?: boolean;
   onPress?: () => void;
 }) {
+  const unavailable = disabled || loading;
   return {
     accessibilityRole: 'button' as const,
     accessibilityLabel,
-    accessibilityState: { disabled },
-    disabled,
-    onPress: disabled ? undefined : onPress,
+    accessibilityState: loading ? { disabled: true, busy: true } : { disabled },
+    disabled: unavailable,
+    onPress: unavailable ? undefined : onPress,
   };
 }
