@@ -13,6 +13,8 @@ export type RemusIconProps = {
   size?: number;
   mode?: DesignColorMode;
   tone?: RemusIconTone;
+  /** An already-resolved semantic stroke color, for composed controls. */
+  strokeColor?: string;
   /** Omit for decorative icons; use a meaningful name when informative. */
   accessibilityLabel?: string;
   testID?: string;
@@ -24,6 +26,7 @@ export function RemusIcon({
   size = 32,
   mode = 'athleteLight',
   tone = 'primary',
+  strokeColor,
   accessibilityLabel,
   testID,
 }: RemusIconProps) {
@@ -42,7 +45,7 @@ export function RemusIcon({
     >
       <Path
         d={path}
-        stroke={color}
+        stroke={strokeColor ?? color}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"

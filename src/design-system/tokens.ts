@@ -73,6 +73,7 @@ export const colors = {
     primary: '#3B82F6',
     primaryPressed: '#1D4ED8',
     accent: '#0EA5E9',
+    onAccent: '#111827',
     disabled: '#D1D5DB',
   },
   athleteDark: {
@@ -84,6 +85,7 @@ export const colors = {
     primary: '#60A5FA',
     primaryPressed: '#2563EB',
     accent: '#38BDF8',
+    onAccent: '#111827',
     disabled: '#4B5563',
   },
   adminLight: {
@@ -95,6 +97,7 @@ export const colors = {
     primary: '#DC2626',
     primaryPressed: '#991B1B',
     accent: '#F59E0B',
+    onAccent: '#111827',
     disabled: '#D1D5DB',
   },
   adminDark: {
@@ -106,6 +109,7 @@ export const colors = {
     primary: '#FCA5A5',
     primaryPressed: '#EF4444',
     accent: '#FBBF24',
+    onAccent: '#111827',
     disabled: '#4B5563',
   },
 } as const;

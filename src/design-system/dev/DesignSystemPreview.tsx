@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../atoms/PrimaryButton';
 import { RemusIcon } from '../atoms/RemusIcon';
+import { RemusIconButton } from '../atoms/RemusIconButton';
 import { type RemusIconName } from '../atoms/remusIconDefinition';
 import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
@@ -116,6 +117,68 @@ export function DesignSystemPreview() {
         </View>
 
         <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Botões com ícone</Text>
+          <Text style={[styles.description, { color: theme.secondaryText }]}>
+            Circular · Neutral / Primary · 40 / 50 / 56 / 72.
+          </Text>
+          <View style={styles.iconButtonGrid}>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="plus" size="small" variant="neutral" mode={mode}
+                accessibilityLabel="Adicionar" testID="icon-button-small"
+                onPress={() => setLastAction('Icon Button: adicionar')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Neutral 40</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="start" size="medium" mode={mode}
+                accessibilityLabel="Iniciar atividade" testID="icon-button-medium"
+                onPress={() => setLastAction('Icon Button: iniciar')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Primary 50</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="pause" size="large" variant="neutral" mode={mode}
+                accessibilityLabel="Pausar atividade" testID="icon-button-large"
+                onPress={() => setLastAction('Icon Button: pausar')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Neutral 56</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="close" size="workout" variant="neutral" mode={mode}
+                accessibilityLabel="Fechar painel" testID="icon-button-workout"
+                onPress={() => setLastAction('Icon Button: fechar painel')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Workout 72</RemusText>
+            </View>
+          </View>
+          <Text style={[styles.description, { color: theme.secondaryText }]}>
+            Pressione e segure para testar Pressed; Disabled não executa ações.
+          </Text>
+          <View style={styles.iconButtonGrid}>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="check" mode={mode} accessibilityLabel="Confirmar"
+                testID="icon-button-pressed"
+                onPress={() => setLastAction('Icon Button: confirmado')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Pressed</RemusText>
+            </View>
+            <View style={styles.iconButtonExample}>
+              <RemusIconButton
+                icon="close" mode={mode} accessibilityLabel="Indisponível"
+                disabled testID="icon-button-disabled"
+                onPress={() => setLastAction('ERRO: icon disabled')}
+              />
+              <RemusText variant="caption" mode={mode} tone="secondary">Disabled</RemusText>
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Estados</Text>
           <Text style={[styles.description, { color: theme.secondaryText }]}>
             Pressione e segure o botão ativo para ver Pressed.
@@ -166,6 +229,8 @@ const styles = StyleSheet.create({
   typographyExample: { marginBottom: spacing.md },
   iconGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   iconExample: { width: 105, alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+  iconButtonGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  iconButtonExample: { width: 108, alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   feedback: { ...typography.body, fontWeight: '600', marginVertical: spacing.md },
   footer: typography.caption,
 });
