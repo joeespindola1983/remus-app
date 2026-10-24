@@ -21,8 +21,8 @@ export function RemusCaptureFab({ action, accessibilityLabel, mode = 'athleteLig
     <Pressable {...interaction} testID={testID}
       style={[styles.control, {
         borderWidth: a.borderWidth, borderColor: a.borderColor,
-        backgroundColor: a.backgroundColor, opacity: disabled ? 0.5 : 1,
-      }]}>
+        backgroundColor: a.backgroundColor,
+      }, disabled && styles.disabled]}>
       {action === 'pause' ? (
         <View style={styles.pauseRow}>
           <View style={[styles.pauseBar, { backgroundColor: a.symbolColor }]} />
@@ -37,6 +37,7 @@ export function RemusCaptureFab({ action, accessibilityLabel, mode = 'athleteLig
 
 const styles = StyleSheet.create({
   control: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  disabled: { opacity: 0.5 },
   pauseRow: { flexDirection: 'row', gap: 6 },
   pauseBar: { width: 6, height: 24, borderRadius: 2 },
   stop: { width: 22, height: 22, borderRadius: 5 },
