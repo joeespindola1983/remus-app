@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../atoms/PrimaryButton';
+import { RemusIcon } from '../atoms/RemusIcon';
+import { type RemusIconName } from '../atoms/remusIconDefinition';
 import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
 
@@ -16,6 +18,17 @@ const typographyExamples = [
   { variant: 'caption', label: 'Body/Caption · 14/20' },
   { variant: 'small', label: 'Body/Small · 12/16' },
 ] as const;
+
+const iconExamples: ReadonlyArray<{ name: RemusIconName; label: string }> = [
+  { name: 'home', label: 'Home' },
+  { name: 'chevronRight', label: 'Chevron Right' },
+  { name: 'close', label: 'Close' },
+  { name: 'plus', label: 'Plus' },
+  { name: 'check', label: 'Check' },
+  { name: 'start', label: 'Start' },
+  { name: 'pause', label: 'Pause' },
+  { name: 'stop', label: 'Stop' },
+];
 
 export function DesignSystemPreview() {
   const insets = useSafeAreaInsets();
@@ -83,6 +96,23 @@ export function DesignSystemPreview() {
       </View>
 
       <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Iconografia</Text>
+        <Text style={[styles.description, { color: theme.secondaryText }]}>
+          Ícones vetoriais oficiais · canvas 32 × 32 · cores semânticas.
+        </Text>
+        <View style={styles.iconGrid}>
+          {iconExamples.map(({ name, label }) => (
+            <View key={name} style={styles.iconExample}>
+              <RemusIcon name={name} mode={mode} testID={`icon-${name}`} />
+              <RemusText variant="caption" mode={mode} tone="secondary">
+                {label}
+              </RemusText>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Estados</Text>
         <Text style={[styles.description, { color: theme.secondaryText }]}>
           Pressione e segure o botão ativo para ver Pressed.
@@ -99,7 +129,7 @@ export function DesignSystemPreview() {
         Última ação: {lastAction}
       </Text>
       <Text style={[styles.footer, { color: theme.secondaryText }]}>
-        Loading, ícones e outras variantes entram nos próximos incrementos.
+        Loading e outras variantes entram nos próximos incrementos.
       </Text>
     </ScrollView>
   );
@@ -128,6 +158,8 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 20, lineHeight: 28, fontWeight: '600', marginBottom: spacing.md },
   example: { paddingBottom: spacing.md },
   typographyExample: { marginBottom: spacing.md },
+  iconGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  iconExample: { width: 105, alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   feedback: { ...typography.body, fontWeight: '600', marginVertical: spacing.md },
   footer: typography.caption,
 });
