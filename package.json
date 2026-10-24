@@ -10,6 +10,7 @@
     "ios:qa": "react-native run-ios --scheme RemusAppQA --mode \"Debug QA\"",
     "ios:prod": "react-native run-ios --scheme RemusApp --mode Debug",
     "lint": "eslint .",
+    "verify": "npm test -- --runInBand && tsc --noEmit && npm run lint -- --max-warnings=0",
     "start": "react-native start",
     "test": "jest",
     "firebase:verify": "python3 scripts/verify_firebase_configs.py"

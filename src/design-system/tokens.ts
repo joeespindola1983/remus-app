@@ -44,6 +44,23 @@ export const typography = {
   },
 } as const;
 
+/**
+ * Semantic text styles from Figma: 03 Foundations — Typography (20:4).
+ * iOS uses its native SF Pro system font; Android uses Roboto.
+ */
+export const typographyScale = {
+  h1: { fontSize: 30, lineHeight: 36, fontWeight: '700' },
+  h2: { fontSize: 24, lineHeight: 32, fontWeight: '700' },
+  h3: { fontSize: 20, lineHeight: 28, fontWeight: '600' },
+  h4: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
+  bodyMedium: { fontSize: 16, lineHeight: 24, fontWeight: '500' },
+  caption: { fontSize: 14, lineHeight: 20, fontWeight: '400' },
+  small: { fontSize: 12, lineHeight: 16, fontWeight: '400' },
+} as const;
+
+export type TypographyVariant = keyof typeof typographyScale;
+
 // Semantic mode values are resolved from the Figma Color collection.
 // Use semantic tokens in components; avoid hardcoded primitive colors.
 export const colors = {

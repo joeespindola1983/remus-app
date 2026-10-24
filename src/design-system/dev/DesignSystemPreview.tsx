@@ -3,7 +3,19 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../atoms/PrimaryButton';
+import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
+
+const typographyExamples = [
+  { variant: 'h1', label: 'Heading/H1 · 30/36' },
+  { variant: 'h2', label: 'Heading/H2 · 24/32' },
+  { variant: 'h3', label: 'Heading/H3 · 20/28' },
+  { variant: 'h4', label: 'Heading/H4 · 18/24' },
+  { variant: 'body', label: 'Body/Default · 16/24' },
+  { variant: 'bodyMedium', label: 'Body/Medium · 16/24' },
+  { variant: 'caption', label: 'Body/Caption · 14/20' },
+  { variant: 'small', label: 'Body/Small · 12/16' },
+] as const;
 
 export function DesignSystemPreview() {
   const insets = useSafeAreaInsets();
@@ -47,6 +59,27 @@ export function DesignSystemPreview() {
         <View style={styles.example}>
           <PrimaryButton label="Large · 56" size="large" mode={mode} onPress={() => setLastAction('Large')} />
         </View>
+      </View>
+
+      <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Tipografia</Text>
+        <Text style={[styles.description, { color: theme.secondaryText }]}>
+          Escala semântica oficial · SF Pro (iOS) / Roboto (Android).
+        </Text>
+        {typographyExamples.map(example => (
+          <View key={example.variant} style={styles.typographyExample}>
+            <RemusText
+              testID={`typography-${example.variant}`}
+              variant={example.variant}
+              mode={mode}
+            >
+              {example.label}
+            </RemusText>
+          </View>
+        ))}
+        <RemusText variant="caption" mode={mode} tone="secondary">
+          Texto secundário — legível nos dois temas.
+        </RemusText>
       </View>
 
       <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -94,6 +127,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 20, lineHeight: 28, fontWeight: '600', marginBottom: spacing.md },
   example: { paddingBottom: spacing.md },
+  typographyExample: { marginBottom: spacing.md },
   feedback: { ...typography.body, fontWeight: '600', marginVertical: spacing.md },
   footer: typography.caption,
 });
