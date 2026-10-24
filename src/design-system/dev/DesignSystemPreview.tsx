@@ -6,6 +6,10 @@ import { PrimaryButton } from '../atoms/PrimaryButton';
 import { RemusIcon } from '../atoms/RemusIcon';
 import { RemusIconButton } from '../atoms/RemusIconButton';
 import { RemusInput } from '../atoms/RemusInput';
+import { RemusCheckbox } from '../atoms/RemusCheckbox';
+import { RemusRadio } from '../atoms/RemusRadio';
+import { RemusToggle } from '../atoms/RemusToggle';
+import { RemusFilterChip } from '../atoms/RemusFilterChip';
 import { type RemusIconName } from '../atoms/remusIconDefinition';
 import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
@@ -37,6 +41,11 @@ export function DesignSystemPreview() {
   const [lastAction, setLastAction] = useState('Nenhum botão acionado');
   const [fieldValue, setFieldValue] = useState('');
   const [errorValue, setErrorValue] = useState('');
+  const [checkboxChecked, setCheckboxChecked] = useState(false);
+  const [mixedChecked, setMixedChecked] = useState(false);
+  const [radioChoice, setRadioChoice] = useState<'a' | 'b'>('a');
+  const [toggleOn, setToggleOn] = useState(false);
+  const [filterTraining, setFilterTraining] = useState(false);
   const mode = dark ? 'athleteDark' : 'athleteLight';
   const theme = colors[mode];
 
@@ -279,6 +288,76 @@ export function DesignSystemPreview() {
         </View>
 
         <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Controles de seleção</Text>
+          <Text style={[styles.description, { color: theme.secondaryText }]}>Checkbox · Radio · Toggle · Filter Chip. Toque para alterar os estados.</Text>
+
+          <RemusText variant="bodyMedium" mode={mode}>Checkbox</RemusText>
+          <View style={styles.selectionRow}>
+            <View style={styles.selectionExample}>
+              <RemusCheckbox testID="selection-checkbox" accessibilityLabel="Marcar seleção"
+                checked={checkboxChecked} onValueChange={setCheckboxChecked} mode={mode} />
+              <RemusText variant="caption" tone="secondary" mode={mode}>{checkboxChecked ? 'Checked' : 'Unchecked'}</RemusText>
+            </View>
+            <View style={styles.selectionExample}>
+              <RemusCheckbox testID="selection-checkbox-mixed" accessibilityLabel="Marcar seleção parcial"
+                checked={mixedChecked} indeterminate={!mixedChecked}
+                onValueChange={setMixedChecked} mode={mode} />
+              <RemusText variant="caption" tone="secondary" mode={mode}>{mixedChecked ? 'Checked' : 'Mixed'}</RemusText>
+            </View>
+            <View style={styles.selectionExample}>
+              <RemusCheckbox testID="selection-checkbox-disabled" accessibilityLabel="Seleção indisponível"
+                disabled mode={mode} />
+              <RemusText variant="caption" tone="secondary" mode={mode}>Disabled</RemusText>
+            </View>
+          </View>
+
+          <RemusText variant="bodyMedium" mode={mode}>Radio</RemusText>
+          <View style={styles.selectionRow}>
+            <View style={styles.selectionExample}>
+              <RemusRadio testID="selection-radio-a" accessibilityLabel="Opção A"
+                selected={radioChoice === 'a'} onSelect={() => setRadioChoice('a')} mode={mode} />
+              <RemusText variant="caption" tone="secondary" mode={mode}>Opção A</RemusText>
+            </View>
+            <View style={styles.selectionExample}>
+              <RemusRadio testID="selection-radio-b" accessibilityLabel="Opção B"
+                selected={radioChoice === 'b'} onSelect={() => setRadioChoice('b')} mode={mode} />
+              <RemusText variant="caption" tone="secondary" mode={mode}>Opção B</RemusText>
+            </View>
+            <View style={styles.selectionExample}>
+              <RemusRadio testID="selection-radio-disabled" accessibilityLabel="Opção indisponível"
+                disabled mode={mode} />
+              <RemusText variant="caption" tone="secondary" mode={mode}>Disabled</RemusText>
+            </View>
+          </View>
+
+          <RemusText variant="bodyMedium" mode={mode}>Toggle</RemusText>
+          <View style={styles.selectionRow}>
+            <View style={styles.selectionExample}>
+              <RemusToggle testID="selection-toggle" accessibilityLabel="Ativar recurso"
+                value={toggleOn} onValueChange={setToggleOn} mode={mode} />
+              <RemusText variant="caption" tone="secondary" mode={mode}>{toggleOn ? 'On' : 'Off'}</RemusText>
+            </View>
+            <View style={styles.selectionExample}>
+              <RemusToggle testID="selection-toggle-disabled" accessibilityLabel="Recurso indisponível"
+                disabled mode={mode} />
+              <RemusText variant="caption" tone="secondary" mode={mode}>Disabled</RemusText>
+            </View>
+          </View>
+
+          <RemusText variant="bodyMedium" mode={mode}>Filter Chip</RemusText>
+          <View style={[styles.selectionRow, styles.chipRow]}>
+            <RemusFilterChip testID="selection-chip-all" label="Todos" mode={mode}
+              selected={!filterTraining} onValueChange={() => setFilterTraining(false)} />
+            <RemusFilterChip testID="selection-chip-training" label="Treinos" mode={mode}
+              selected={filterTraining} onValueChange={() => setFilterTraining(true)} />
+            <RemusFilterChip testID="selection-chip-disabled" label="Indisponível" disabled mode={mode} />
+          </View>
+          <RemusText variant="caption" mode={mode} tone="secondary">
+            Os estados são controlados pela galeria. Disabled não executa ações.
+          </RemusText>
+        </View>
+
+        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Estados</Text>
           <Text style={[styles.description, { color: theme.secondaryText }]}>
             Pressione e segure o botão ativo para ver Pressed.
@@ -328,6 +407,9 @@ const styles = StyleSheet.create({
   example: { paddingBottom: spacing.md },
   typographyExample: { marginBottom: spacing.md },
   inputExample: { marginBottom: spacing.md },
+  selectionRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.md, marginTop: spacing.sm, gap: spacing.sm },
+  selectionExample: { minWidth: 72, alignItems: 'center', gap: spacing.xs },
+  chipRow: { gap: spacing.sm },
   iconGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   iconExample: { width: 105, alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   iconButtonGrid: { flexDirection: 'row', flexWrap: 'wrap' },
