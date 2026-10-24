@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { RemusSourceBadge } from '../atoms/RemusSourceBadge';
+import { type CaptureSource } from '../atoms/remusChartCaptureStyle';
 import { type MoleculeMode, type MoleculeTone, clampPercent, moleculePalette, moleculeStyles, toneColor } from './moleculeStyle';
 
 type Base={mode?:MoleculeMode;testID?:string};
@@ -9,13 +10,13 @@ const sourceLabels:Record<SourceStatus,string>={ready:'Pronto',recording:'Gravan
 const sourceTones:Record<SourceStatus,MoleculeTone>={ready:'success',recording:'critical',interrupted:'warning',syncing:'primary'};
 
 /** Figma 500:37. Source identity and state are intentionally independent. */
-export function RemusSourceStatusRow({name,detail,state,mode='athleteLight',testID}:Base & {
-  name:string;detail:string;state:SourceStatus;
+export function RemusSourceStatusRow({name,detail,source,state,mode='athleteLight',testID}:Base & {
+  name:string;detail:string;source:CaptureSource;state:SourceStatus;
 }) {
   const c=moleculePalette(mode);
   return <View testID={testID} style={[moleculeStyles.card,moleculeStyles.between,{backgroundColor:c.surface,borderColor:c.border}]}>
     <View style={[moleculeStyles.row,styles.flexContent]}>
-      <RemusSourceBadge source="rbp1" mode={mode}/>
+      <RemusSourceBadge source={source} mode={mode} testID={testID?`${testID}-source`:undefined}/>
       <View style={[moleculeStyles.column,styles.flexContent]}>
         <Text style={[moleculeStyles.title,{color:c.text}]}>{name}</Text>
         <Text style={[moleculeStyles.caption,{color:c.secondaryText}]}>{detail}</Text>

@@ -6,8 +6,9 @@ export type ChartAxis='time'|'distance';
 export type ChartDatum={t:number;d:number;speed:number|null;pace:number|null;spm:number|null;hr:number|null};
 export type ChartHeartRate={t:number;d:number;hr:number};
 export type ChartSegment={id:string;label:string;kind:'piece'|'sprint'|'turn'|'stopped'|'race';start:number;end:number;note?:string};
-export type ChartSession={title:string;date:string;data:readonly ChartDatum[];hrPoints?:readonly ChartHeartRate[];segments:readonly ChartSegment[];sources:readonly string[]};
+export type ChartSession={id:string;title:string;date:string;data:readonly ChartDatum[];hrPoints?:readonly ChartHeartRate[];segments:readonly ChartSegment[];sources:readonly string[]};
 export type ChartSelection={axis:ChartAxis;start:number;end:number;metrics:readonly ChartMetric[];primaryMetric:ChartMetric;activeSegment:string|null};
+export type ChartSessionSelection={sessionId:string;selection:ChartSelection};
 
 /** Engine/backend-owned sport metrics for one physical elapsed-time range.
  *  Values are inputs to the UI, never derived by this contract.
@@ -50,6 +51,16 @@ export function chartFullRange(session:ChartSession):{start:number;end:number}{
 export function createChartSelection(session:ChartSession):ChartSelection{
   const full=chartFullRange(session);
   return {...full,axis:'time',metrics:['speed'],primaryMetric:'speed',activeSegment:null};
+}
+
+/** Keeps uncontrolled UI state scoped to one stable session identity. */
+export function chartSelectionForSession(
+  current:ChartSessionSelection,
+  session:ChartSession,
+):ChartSessionSelection{
+  return current.sessionId===session.id
+    ? current
+    : {sessionId:session.id,selection:createChartSelection(session)};
 }
 
 export function normalizeChartRange(range:{start:number;end:number},full:{start:number;end:number},minDuration=12):{start:number;end:number}{

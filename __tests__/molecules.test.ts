@@ -5,10 +5,12 @@ import {
   chartFullRange, chartToggleMetric, chartSetAxis, chartSetRange, chartSelectSegment,
   chartResetRange, chartYDomain, chartSummaryForSelection, chartSeriesPaths, createChartSelection,
   chartFormatPace, chartFormatDuration, chartMetricValue, chartNearestRow, chartInspectMetric,
+  chartSelectionForSession,
   type ChartSession,
 } from '../src/design-system/molecules/chartContract';
 
 const activity:ChartSession={
+  id:'test-activity',
   title:'Test',date:'Now',sources:['Mock'],
   data:Array.from({length:31},(_,i)=>({
     t:i*15,d:i*10,speed:i===10?null:5+i*.25,pace:i===10?null:210-i,
@@ -47,6 +49,17 @@ describe('REMUS Golden Master — canonical chart contract',()=>{
   it('starts with one metric and the entire session range',()=>{
     const selection=createChartSelection(activity);
     expect(selection).toEqual({axis:'time',metrics:['speed'],primaryMetric:'speed',start:0,end:450,activeSegment:null});
+  });
+  it('keeps local selection for the same session and resets it for a new session',()=>{
+    const selected=chartSelectSegment(createChartSelection(activity),activity,'sprint');
+    const local={sessionId:activity.id,selection:selected};
+    expect(chartSelectionForSession(local,{...activity})).toBe(local);
+
+    const nextSession={...activity,id:'next-activity',data:activity.data.slice(0,11)};
+    expect(chartSelectionForSession(local,nextSession)).toEqual({
+      sessionId:'next-activity',
+      selection:{axis:'time',metrics:['speed'],primaryMetric:'speed',start:0,end:150,activeSegment:null},
+    });
   });
   it('keeps at least one metric and gives newest overlay primary focus',()=>{
     const original=createChartSelection(activity);

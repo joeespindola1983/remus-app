@@ -6,7 +6,7 @@ import {
   type ChartAxis, type ChartContextSummary, type ChartMetric, type ChartSelection, type ChartSession,
   chartFullRange, chartFormatDuration, chartFormatPace, chartMetricDefs,
   chartSummaryForSelection, chartResetRange, chartSelectSegment, chartSeriesPaths, chartNearestRow, chartInspectMetric,
-  chartSetAxis, chartSetRange, chartToggleMetric, chartYDomain, createChartSelection,
+  chartSelectionForSession, chartSetAxis, chartSetRange, chartToggleMetric, chartYDomain, createChartSelection,
 } from './chartContract';
 
 /** Golden Master v1.0-rc2: one plot for reading, independent navigator for range control. */
@@ -32,11 +32,15 @@ export function RemusUnifiedChart({session, selection, summary, onSelectionChang
 }) {
   const c = moleculePalette(mode);
   const clipId = `chart-clip-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
-  const [local, setLocal] = useState<ChartSelection>(() => createChartSelection(session));
+  const [local, setLocal] = useState(() => ({
+    sessionId: session.id,
+    selection: createChartSelection(session),
+  }));
   const [width, setWidth] = useState(320);
-  const [inspection, setInspection] = useState<number | null>(null);
-  const drag = useRef<{kind: 'left' | 'right' | 'window'; origin: number; start: number; end: number} | null>(null);
-  const state = selection ?? local;
+  const [inspection, setInspection] = useState<{sessionId: string; time: number} | null>(null);
+  const drag = useRef<{sessionId: string; kind: 'left' | 'right' | 'window'; origin: number; start: number; end: number} | null>(null);
+  const localForSession = chartSelectionForSession(local, session);
+  const state = selection ?? localForSession.selection;
   const full = chartFullRange(session);
   const duration = Math.max(1, full.end - full.start);
   const safeWidth = Math.max(MIN_WIDTH, width);
@@ -44,7 +48,7 @@ export function RemusUnifiedChart({session, selection, summary, onSelectionChang
   const plotHeight = PLOT_HEIGHT - PLOT_TOP - PLOT_BOTTOM;
   const fromNavigatorX = (x: number) => full.start + Math.max(0, Math.min(1, x / safeWidth)) * duration;
   const setState = (next: ChartSelection) => {
-    if (selection === undefined) {setLocal(next);}
+    if (selection === undefined) {setLocal({sessionId: session.id, selection: next});}
     onSelectionChange?.(next);
     setInspection(null);
   };
@@ -72,17 +76,19 @@ export function RemusUnifiedChart({session, selection, summary, onSelectionChang
   };
   const plotInspection = (event: GestureResponderEvent) => {
     const fraction = Math.max(0, Math.min(1, (event.nativeEvent.locationX - PLOT_LEFT) / plotWidth));
-    setInspection(chartNearestRow(session, state, fraction)?.t ?? null);
+    const time = chartNearestRow(session, state, fraction)?.t;
+    setInspection(time === undefined ? null : {sessionId: session.id, time});
   };
   const startNavigatorDrag = (event: GestureResponderEvent) => {
     const x = event.nativeEvent.locationX;
     const kind: 'left' | 'right' | 'window' =
       Math.abs(x - left) < 22 ? 'left' : Math.abs(x - right) < 22 ? 'right' : 'window';
-    drag.current = {kind, origin: fromNavigatorX(x), start: state.start, end: state.end};
+    drag.current = {sessionId: session.id, kind, origin: fromNavigatorX(x), start: state.start, end: state.end};
   };
   const moveNavigatorDrag = (event: GestureResponderEvent) => {
     const current = drag.current;
     if (!current) {return;}
+    if (current.sessionId !== session.id) {drag.current = null; return;}
     const target = fromNavigatorX(event.nativeEvent.locationX);
     if (current.kind === 'left') {setState(chartSetRange(state, session, target, current.end));}
     else if (current.kind === 'right') {setState(chartSetRange(state, session, current.start, target));}
@@ -107,7 +113,9 @@ export function RemusUnifiedChart({session, selection, summary, onSelectionChang
   const miniSelection: ChartSelection = {...state, ...full, metrics: ['speed'], primaryMetric: 'speed', axis: 'time'};
   const miniDomain = chartYDomain(session, miniSelection);
   const miniPaths = chartSeriesPaths(session, miniSelection, 'speed', safeWidth, NAV_HEIGHT, miniDomain);
-  const inspected = inspection === null ? null : session.data.find(row => row.t === inspection) ?? null;
+  const inspected = inspection?.sessionId === session.id
+    ? session.data.find(row => row.t === inspection.time) ?? null
+    : null;
   const cursorX = inspected ? pointX(inspected.t, inspected.d) : 0;
   const dark = mode.endsWith('Dark');
   const plotBackground = dark ? '#1A3433' : '#E9F7F4';
@@ -191,7 +199,7 @@ export function RemusUnifiedChart({session, selection, summary, onSelectionChang
                 y1={plotHeight * fraction} y2={plotHeight * fraction} stroke={mutedGrid} strokeWidth={0.75}/>)}
               {plotPaths}
               {hrDots}
-              {inspected && inspection !== null && inspection >= state.start && inspection <= state.end ?
+              {inspected && inspected.t >= state.start && inspected.t <= state.end ?
                 <Line x1={cursorX} x2={cursorX} y1={0} y2={plotHeight} stroke={c.secondaryText} strokeWidth={1}/>:null}
             </G>
             {[0, 0.25, 0.5, 0.75, 1].map(fraction => <SvgText key={`tick-${fraction}`}

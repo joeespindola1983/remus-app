@@ -126,8 +126,13 @@ export function MoleculePreview({mode}: {mode:DesignColorMode}){
       </View>:null}
       {tab==='capture'?<View style={styles.section}>
         {sample('01 · Source Status Row',<View style={styles.section}>
-          {(['ready','recording','interrupted','syncing'] as const).map(s=><RemusSourceStatusRow key={s}
-            name="Remus Blade P1" detail="GPS · IMU · 92%" state={s} mode={mode}/>)}
+          {([
+            {state:'ready',source:'rbp1',name:'Remus Blade P1'},
+            {state:'recording',source:'phone',name:'Celular'},
+            {state:'interrupted',source:'watch',name:'Relógio'},
+            {state:'syncing',source:'instrument',name:'Instrumento'},
+          ] as const).map(item=><RemusSourceStatusRow key={item.state}
+            name={item.name} detail="GPS · IMU · 92%" source={item.source} state={item.state} mode={mode}/>)}
         </View>)}
         {sample('02 · Artifact Part Progress',<View style={styles.section}>
           <RemusArtifactPartProgress state="transferring" percent={68} detail="IMU 3/5 · 68%" mode={mode}/>
