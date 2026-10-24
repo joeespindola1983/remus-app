@@ -84,6 +84,8 @@ export const colors = {
     destructivePressed: '#B91C1C',
     onDestructive: '#FFFFFF',
     onAccent: '#111827',
+    success: '#10B981',
+    avatarSurface: '#F3F4F6',
     disabled: '#D1D5DB',
   },
   athleteDark: {
@@ -105,6 +107,8 @@ export const colors = {
     destructivePressed: '#DC2626',
     onDestructive: '#111827',
     onAccent: '#111827',
+    success: '#34D399',
+    avatarSurface: '#374151',
     disabled: '#4B5563',
   },
   adminLight: {
@@ -126,6 +130,8 @@ export const colors = {
     destructivePressed: '#B91C1C',
     onDestructive: '#FFFFFF',
     onAccent: '#111827',
+    success: '#10B981',
+    avatarSurface: '#F3F4F6',
     disabled: '#D1D5DB',
   },
   adminDark: {
@@ -147,6 +153,8 @@ export const colors = {
     destructivePressed: '#DC2626',
     onDestructive: '#111827',
     onAccent: '#111827',
+    success: '#34D399',
+    avatarSurface: '#374151',
     disabled: '#4B5563',
   },
 } as const;
