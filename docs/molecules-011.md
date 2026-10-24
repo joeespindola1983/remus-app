@@ -44,3 +44,6 @@ See [chart-golden-master-contract.md](chart-golden-master-contract.md). The char
 - Replace placeholders with official Figma icon/vector exports where existing `RemusIcon` lacks a corresponding symbol.
 - Verify dynamic font sizes, truncation, small-screen width, voiceover/talkback, larger accessibility type, and contrast.
 - Harden chart navigator touch handling at every device density; compare golden screenshots and 1-to-1 plot features.
+
+
+**Architecture update 012:** chart contextual summary cards now accept precomputed `ChartContextSummary` from the engine, local processed data or backend. The QA gallery uses `goldenChartSummaryFixture.ts` only; the production React Native molecule no longer computes athletic metrics.

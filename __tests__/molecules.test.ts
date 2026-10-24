@@ -1,8 +1,9 @@
 import { goldenChartSession } from '../src/design-system/dev/goldenChartFixture';
+import { goldenChartSummaryFixture } from '../src/design-system/dev/goldenChartSummaryFixture';
 import { clampPercent, moleculeGeometry, moleculePalette, semanticProgress, toneColor } from '../src/design-system/molecules/moleculeStyle';
 import {
   chartFullRange, chartToggleMetric, chartSetAxis, chartSetRange, chartSelectSegment,
-  chartResetRange, chartYDomain, chartRangeSummary, chartSeriesPaths, createChartSelection,
+  chartResetRange, chartYDomain, chartSummaryForSelection, chartSeriesPaths, createChartSelection,
   chartFormatPace, chartFormatDuration, chartMetricValue, chartNearestRow, chartInspectMetric,
   type ChartSession,
 } from '../src/design-system/molecules/chartContract';
@@ -84,11 +85,12 @@ describe('REMUS Golden Master — canonical chart contract',()=>{
   });
   it('computes contextual summary without treating gaps as zeros',()=>{
     const range=chartSetRange(createChartSelection(activity),activity,15,45);
-    const sum=chartRangeSummary(activity,range);
-    expect(sum.duration).toBe(30);
-    expect(sum.distance).toBe(20);
-    expect(sum.spm).toBeGreaterThan(20);
-    expect(sum.pace).toBeGreaterThan(0);
+    const sum=goldenChartSummaryFixture(activity,range);
+    expect(sum.durationSeconds).toBe(30);
+    expect(sum.distanceMeters).toBe(20);
+    expect(sum.averageSpm).toBeGreaterThan(20);
+    expect(sum.averageSplitSecondsPer500m).toBeGreaterThan(0);
+    expect(chartSummaryForSelection(range,sum)).toBe(sum);
   });
   it('uses local single metric Y scale but 0-based shared multi-metric domain',()=>{
     const single=chartYDomain(activity,createChartSelection(activity));
@@ -120,6 +122,18 @@ describe('REMUS Golden Master — canonical chart contract',()=>{
     expect(chartInspectMetric(activity,activity.data[4],'hr')).toBe('142 bpm');
     expect(chartInspectMetric(activity,activity.data[5],'hr')).toBe('—');
   });
+
+  it('accepts only summaries matching the shared selection, never stale engine responses', () => {
+    const first=chartSelectSegment(createChartSelection(activity),activity,'sprint');
+    const result=goldenChartSummaryFixture(activity,first);
+    expect(chartSummaryForSelection(first,result)).toBe(result);
+    expect(chartSummaryForSelection(chartSetAxis(first,'distance'),result)).toBe(result);
+    expect(chartSummaryForSelection(chartToggleMetric(first,'pace'),result)).toBe(result);
+    const moved=chartSetRange(first,activity,130,230);
+    expect(chartSummaryForSelection(moved,result)).toBe(null);
+    expect(chartSummaryForSelection(moved,null)).toBe(null);
+    expect(chartSummaryForSelection(moved,undefined)).toBe(null);
+  });
   it('formats duration and pace using athlete-facing values',()=>{
     expect(chartFormatDuration(188)).toBe('3:08');
     expect(chartFormatPace(188)).toBe('3:08 /500m');
@@ -141,12 +155,12 @@ describe('Golden Master v1.0-rc2 — frozen reference session', () => {
     const selected=chartSelectSegment(createChartSelection(goldenChartSession),goldenChartSession,'piece1');
     expect(selected.start).toBe(570);
     expect(selected.end).toBe(950);
-    const summary=chartRangeSummary(goldenChartSession,selected);
-    expect(summary.duration).toBe(380);
-    expect(summary.distance).toBeGreaterThan(1030);
-    expect(summary.distance).toBeLessThanOrEqual(1040);
-    expect(summary.spm?.toFixed(1)).toBe('21.7');
-    expect(chartFormatPace(summary.pace)).toBe('3:03 /500m');
+    const summary=goldenChartSummaryFixture(goldenChartSession,selected);
+    expect(summary.durationSeconds).toBe(380);
+    expect(summary.distanceMeters).toBeGreaterThan(1030);
+    expect(summary.distanceMeters).toBeLessThanOrEqual(1040);
+    expect(summary.averageSpm?.toFixed(1)).toBe('21.7');
+    expect(chartFormatPace(summary.averageSplitSecondsPer500m)).toBe('3:03 /500m');
   });
   it('preserves selection and actual gaps after axis changes and metric overlays', () => {
     const piece=chartSelectSegment(createChartSelection(goldenChartSession),goldenChartSession,'piece1');

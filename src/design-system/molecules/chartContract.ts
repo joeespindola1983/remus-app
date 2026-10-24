@@ -8,6 +8,31 @@ export type ChartHeartRate={t:number;d:number;hr:number};
 export type ChartSegment={id:string;label:string;kind:'piece'|'sprint'|'turn'|'stopped'|'race';start:number;end:number;note?:string};
 export type ChartSession={title:string;date:string;data:readonly ChartDatum[];hrPoints?:readonly ChartHeartRate[];segments:readonly ChartSegment[];sources:readonly string[]};
 export type ChartSelection={axis:ChartAxis;start:number;end:number;metrics:readonly ChartMetric[];primaryMetric:ChartMetric;activeSegment:string|null};
+
+/** Engine/backend-owned sport metrics for one physical elapsed-time range.
+ *  Values are inputs to the UI, never derived by this contract.
+ *  The range is expressed in seconds regardless of Time/Distance display axis.
+ */
+export type ChartContextSummary = {
+  range: Readonly<{start:number;end:number}>;
+  averageSpm: number | null;
+  averageSplitSecondsPer500m: number | null;
+  distanceMeters: number | null;
+  durationSeconds: number | null;
+};
+
+/** Prevent a slow engine/backend response for an old range from being shown
+ *  under the newly selected range. Axis and active metrics don't alter identity. */
+export function chartSummaryForSelection(
+  selection: ChartSelection,
+  summary: ChartContextSummary | null | undefined,
+): ChartContextSummary | null {
+  if (!summary) {return null;}
+  const EPSILON_SECONDS = 0.001;
+  return Math.abs(summary.range.start - selection.start) <= EPSILON_SECONDS &&
+    Math.abs(summary.range.end - selection.end) <= EPSILON_SECONDS ? summary : null;
+}
+
 export type ChartDomain={min:number;max:number};
 export const chartMetricDefs={
   speed:{label:'Speed',unit:'km/h',accent:'#12a99c',minSpan:2.5},
@@ -117,24 +142,6 @@ export function chartInspectMetric(session:ChartSession,row:ChartDatum,metric:Ch
   if(data===null||!Number.isFinite(data)||data<=0)return '—';
   if(metric==='pace')return chartFormatPace(data);
   return metric==='speed'?`${data.toFixed(1)} km/h`:metric==='spm'?`${data.toFixed(1)} SPM`:`${Math.round(data)} bpm`;
-}
-
-export function chartAverage(values:readonly (number|null)[]):number|null{
-  const valid=values.filter((n):n is number=>n!==null&&Number.isFinite(n));
-  return valid.length?valid.reduce((acc,n)=>acc+n,0)/valid.length:null;
-}
-
-export function chartRangeSummary(session:ChartSession,selection:ChartSelection){
-  const data=chartVisibleRows(session,selection);
-  const distance=data.length>=2?Math.max(0,data[data.length-1].d-data[0].d):0;
-  return {
-    duration:Math.max(0,selection.end-selection.start),
-    distance,
-    spm:chartAverage(data.map(d=>d.spm!==null&&d.spm>0?d.spm:null)),
-    // Average split is elapsed seconds per 500 m over this range (Golden Master),
-    // not the arithmetic mean of instantaneous split estimates.
-    pace:distance>5 ? (Math.max(0,selection.end-selection.start)*500/distance) : null,
-  };
 }
 
 export function chartFormatDuration(sec:number){const s=Math.floor(Math.max(0,sec));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}

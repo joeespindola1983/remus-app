@@ -25,6 +25,7 @@ import {
 } from '../molecules/RemusChartMolecules';
 import { chartSelectSegment, createChartSelection, type ChartSelection } from '../molecules/chartContract';
 import { goldenChartSession } from './goldenChartFixture';
+import { goldenChartSummaryFixture } from './goldenChartSummaryFixture';
 
 type Tab='data'|'weather'|'capture'|'charts';
 const tabs:readonly {id:Tab;label:string}[]=[
@@ -48,6 +49,8 @@ export function MoleculePreview({mode}: {mode:DesignColorMode}){
   const [weatherMetric,setWeatherMetric]=useState<WeatherMetric>('overview');
   const [weatherExpanded,setWeatherExpanded]=useState(false);
   const [selection,setSelection]=useState<ChartSelection>(()=>chartSelectSegment(createChartSelection(sampleChartSession),sampleChartSession,'piece1'));
+  // QA-only: production callers pass a precomputed summary received from an engine/data source.
+  const chartSummary = goldenChartSummaryFixture(sampleChartSession, selection);
   const press=(text:string)=>()=>setLast(text);
   const sample=(name:string,content:ReactNode)=><View style={[styles.sample,{borderColor:c.border}]}>
     <Text style={[moleculeStyles.caption,{color:c.secondaryText}]}>{name}</Text>
@@ -164,9 +167,9 @@ export function MoleculePreview({mode}: {mode:DesignColorMode}){
           Golden Master v1.0-rc2 · sessão real de referência (17 set 2026) · QA funcional, sem homologação de gestos.
         </Text>
         {sample('01 · Unified Detailed Chart',<RemusUnifiedDetailedChart session={sampleChartSession}
-          selection={selection} onSelectionChange={setSelection} mode={mode} testID="molecule-unified-detailed"/>)}
+          selection={selection} summary={chartSummary} onSelectionChange={setSelection} mode={mode} testID="molecule-unified-detailed"/>)}
         {sample('02 · Unified Chart (Compact / Standard)',<RemusUnifiedChart session={sampleChartSession}
-          selection={selection} onSelectionChange={setSelection} density="compact" mode={mode}/>)}
+          selection={selection} summary={chartSummary} onSelectionChange={setSelection} density="compact" mode={mode}/>)}
         {sample('03 · Forecast Date Rail',<RemusForecastDateRail dates={[
           {id:'yesterday',label:'Yesterday',detail:'23 Oct'}, {id:'today',label:'Today',detail:'24 Oct'},
           {id:'tomorrow',label:'Tomorrow',detail:'25 Oct'},

@@ -3,9 +3,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View, type GestureResponderEve
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 import { type MoleculeMode, moleculePalette, moleculeStyles } from './moleculeStyle';
 import {
-  type ChartAxis, type ChartMetric, type ChartSelection, type ChartSession,
+  type ChartAxis, type ChartContextSummary, type ChartMetric, type ChartSelection, type ChartSession,
   chartFullRange, chartFormatDuration, chartFormatPace, chartMetricDefs,
-  chartRangeSummary, chartResetRange, chartSelectSegment, chartSeriesPaths, chartNearestRow, chartInspectMetric,
+  chartSummaryForSelection, chartResetRange, chartSelectSegment, chartSeriesPaths, chartNearestRow, chartInspectMetric,
   chartSetAxis, chartSetRange, chartToggleMetric, chartYDomain, createChartSelection,
 } from './chartContract';
 
@@ -22,9 +22,11 @@ type Base = {mode?: MoleculeMode; testID?: string};
 const dataMetrics: readonly ChartMetric[] = ['pace', 'speed', 'spm', 'hr'];
 const seriesAccent = (metric: ChartMetric) => chartMetricDefs[metric].accent;
 
-export function RemusUnifiedChart({session, selection, onSelectionChange, mode = 'athleteLight', density = 'detailed', testID}: Base & {
+export function RemusUnifiedChart({session, selection, summary, onSelectionChange, mode = 'athleteLight', density = 'detailed', testID}: Base & {
   session: ChartSession;
   selection?: ChartSelection;
+  /** Already computed by the engine/backend and tagged with the selected elapsed-time range. */
+  summary?: ChartContextSummary | null;
   onSelectionChange?: (next: ChartSelection) => void;
   density?: 'compact' | 'standard' | 'detailed';
 }) {
@@ -47,7 +49,7 @@ export function RemusUnifiedChart({session, selection, onSelectionChange, mode =
     setInspection(null);
   };
   const domain = chartYDomain(session, state);
-  const summary = chartRangeSummary(session, state);
+  const currentSummary = chartSummaryForSelection(state, summary);
   const left = safeWidth * ((state.start - full.start) / duration);
   const right = safeWidth * ((state.end - full.start) / duration);
   const selectedWidth = Math.max(0, right - left);
@@ -148,10 +150,10 @@ export function RemusUnifiedChart({session, selection, onSelectionChange, mode =
 
     {density === 'detailed' ? <View style={styles.statGrid}>
       {[
-        ['SPM MÉDIO', summary.spm === null ? '—' : summary.spm.toFixed(1)],
-        ['RITMO MÉDIO', chartFormatPace(summary.pace)],
-        ['DISTÂNCIA', `${(summary.distance / 1000).toFixed(2)} km`],
-        ['DURAÇÃO', chartFormatDuration(summary.duration)],
+        ['SPM MÉDIO', currentSummary?.averageSpm == null ? '—' : currentSummary.averageSpm.toFixed(1)],
+        ['RITMO MÉDIO', chartFormatPace(currentSummary?.averageSplitSecondsPer500m ?? null)],
+        ['DISTÂNCIA', currentSummary?.distanceMeters == null ? '—' : `${(currentSummary.distanceMeters / 1000).toFixed(2)} km`],
+        ['DURAÇÃO', currentSummary?.durationSeconds == null ? '—' : chartFormatDuration(currentSummary.durationSeconds)],
       ].map(([label, value]) => <View key={label} style={[styles.stat, {backgroundColor: c.mutedSurface}]}>
         <Text style={[styles.statLabel, {color: c.secondaryText}]}>{label}</Text>
         <Text style={[styles.statValue, {color: c.text}]} numberOfLines={2}>{value}</Text>
