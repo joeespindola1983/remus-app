@@ -1,15 +1,24 @@
-# Remus observability — bootstrap
+# Remus observability
 
 One Firebase project `remus-fc856` hosts separate QA and Production apps for Android and iOS.
 
 ## Application API
 
-- `src/observability/telemetry.ts`: injectable business-facing interface. No Firebase imports.
+- `src/observability/telemetry.ts`: typed, injectable application boundary. No Firebase imports.
+- `src/observability/telemetrySinks.ts`: SDK-free no-op and in-memory adapters for deterministic development, tests and future QA diagnostics.
 - `src/observability/firebaseTelemetry.ts`: the only Firebase adapter.
 - `index.js`: sends the custom Analytics event `remus_app_started` **once per JavaScript runtime startup**. Automatic lifecycle events remain available. This does not imply an event for every foreground/resume.
 - For a future recoverable error: `void remusTelemetry.recordNonFatal(error)`. Do not put GPS positions, personal details, activity traces, or credentials in error messages.
 - Both methods are best effort: Analytics / Crashlytics outages must not block a workout.
 - The temporary Crashlytics QA button and activation script were removed.
+
+## Collection control — 013A
+
+`createTelemetry` accepts a function that reads the current Analytics and crash-reporting consent before every operation. Disabled channels never call their sink. If consent cannot be read, collection fails closed without affecting the app.
+
+The event union currently permits only `remus_app_started`, with no payload. New events and their allowlisted, low-cardinality fields must be added explicitly; coordinates, routes, health data, names, email, persistent device identifiers, tokens and raw sensor data do not belong in Analytics events.
+
+This TypeScript gate controls calls made through the application boundary. Connecting it to Firebase SDK collection switches and persisted user preferences belongs to 013B; until that integration, the existing bootstrap behavior remains enabled for compatibility.
 
 ## Tests
 

@@ -5,6 +5,6 @@ import {createTelemetry} from './telemetry';
 
 /** Firebase integration: no React UI or app-specific rules belong here. */
 export const remusTelemetry = createTelemetry({
-  logEvent: name => logEvent(getAnalytics(), name),
+  logEvent: event => logEvent(getAnalytics(), event.name),
   recordError: error => recordError(getCrashlytics(), error),
 });
