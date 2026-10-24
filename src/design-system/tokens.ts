@@ -28,6 +28,7 @@ export const controlSize = {
   medium: 50,
   large: 56,
   minimumTouch: 48,
+  input: 48,
 } as const;
 
 export const stroke = { default: 1, emphasis: 2 } as const;
@@ -78,6 +79,7 @@ export const colors = {
     onWarning: '#111827',
     onWarningPressed: '#FFFFFF',
     destructive: '#EF4444',
+    feedbackError: '#EF4444',
     destructivePressed: '#B91C1C',
     onDestructive: '#FFFFFF',
     onAccent: '#111827',
@@ -97,6 +99,7 @@ export const colors = {
     onWarning: '#111827',
     onWarningPressed: '#111827',
     destructive: '#F87171',
+    feedbackError: '#F87171',
     destructivePressed: '#DC2626',
     onDestructive: '#111827',
     onAccent: '#111827',
@@ -116,6 +119,7 @@ export const colors = {
     onWarning: '#111827',
     onWarningPressed: '#FFFFFF',
     destructive: '#EF4444',
+    feedbackError: '#EF4444',
     destructivePressed: '#B91C1C',
     onDestructive: '#FFFFFF',
     onAccent: '#111827',
@@ -135,6 +139,7 @@ export const colors = {
     onWarning: '#111827',
     onWarningPressed: '#111827',
     destructive: '#F87171',
+    feedbackError: '#F87171',
     destructivePressed: '#DC2626',
     onDestructive: '#111827',
     onAccent: '#111827',

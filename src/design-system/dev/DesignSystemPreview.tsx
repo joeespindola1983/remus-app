@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../atoms/PrimaryButton';
 import { RemusIcon } from '../atoms/RemusIcon';
 import { RemusIconButton } from '../atoms/RemusIconButton';
+import { RemusInput } from '../atoms/RemusInput';
 import { type RemusIconName } from '../atoms/remusIconDefinition';
 import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
@@ -34,6 +35,8 @@ const iconExamples: ReadonlyArray<{ name: RemusIconName; label: string }> = [
 export function DesignSystemPreview() {
   const [dark, setDark] = useState(false);
   const [lastAction, setLastAction] = useState('Nenhum botão acionado');
+  const [fieldValue, setFieldValue] = useState('');
+  const [errorValue, setErrorValue] = useState('');
   const mode = dark ? 'athleteDark' : 'athleteLight';
   const theme = colors[mode];
 
@@ -236,6 +239,46 @@ export function DesignSystemPreview() {
         </View>
 
         <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Campos de texto</Text>
+          <Text style={[styles.description, { color: theme.secondaryText }]}>
+            Input · 48 px · Default / Focused / Error / Disabled.
+          </Text>
+          <View style={styles.inputExample}>
+            <RemusInput
+              mode={mode}
+              testID="input-default"
+              accessibilityLabel="Valor de exemplo"
+              placeholder="Enter value"
+              value={fieldValue}
+              onChangeText={setFieldValue}
+            />
+          </View>
+          <View style={styles.inputExample}>
+            <RemusInput
+              mode={mode}
+              testID="input-error"
+              accessibilityLabel="Valor com erro"
+              placeholder="Valor inválido"
+              error
+              value={errorValue}
+              onChangeText={setErrorValue}
+            />
+          </View>
+          <View style={styles.inputExample}>
+            <RemusInput
+              mode={mode}
+              testID="input-disabled"
+              accessibilityLabel="Campo indisponível"
+              placeholder="Unavailable"
+              disabled
+            />
+          </View>
+          <RemusText variant="caption" mode={mode} tone="secondary">
+            Toque no primeiro campo para testar Focused. O último campo não permite edição.
+          </RemusText>
+        </View>
+
+        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Estados</Text>
           <Text style={[styles.description, { color: theme.secondaryText }]}>
             Pressione e segure o botão ativo para ver Pressed.
@@ -284,6 +327,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 20, lineHeight: 28, fontWeight: '600', marginBottom: spacing.md },
   example: { paddingBottom: spacing.md },
   typographyExample: { marginBottom: spacing.md },
+  inputExample: { marginBottom: spacing.md },
   iconGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   iconExample: { width: 105, alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   iconButtonGrid: { flexDirection: 'row', flexWrap: 'wrap' },
