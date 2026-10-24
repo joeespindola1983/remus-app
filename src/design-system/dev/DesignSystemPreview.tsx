@@ -10,6 +10,16 @@ import { RemusCheckbox } from '../atoms/RemusCheckbox';
 import { RemusRadio } from '../atoms/RemusRadio';
 import { RemusToggle } from '../atoms/RemusToggle';
 import { RemusFilterChip } from '../atoms/RemusFilterChip';
+import { RemusConditionStatus } from '../atoms/RemusConditionStatus';
+import { RemusAvatar } from '../atoms/RemusAvatar';
+import { RemusNavigationItem } from '../atoms/RemusNavigationItem';
+import { RemusChartMark } from '../atoms/RemusChartMark';
+import { RemusChartRule } from '../atoms/RemusChartRule';
+import { RemusBatteryStatus } from '../atoms/RemusBatteryStatus';
+import { RemusSourceBadge } from '../atoms/RemusSourceBadge';
+import { RemusCaptureFab } from '../atoms/RemusCaptureFab';
+import { chartMarkKinds, chartRuleKinds, batteryConditions, sourceTypes } from '../atoms/remusChartCaptureStyle';
+import { type ConditionStatus } from '../atoms/remusPresentationStyle';
 import { type RemusIconName } from '../atoms/remusIconDefinition';
 import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
@@ -46,6 +56,7 @@ export function DesignSystemPreview() {
   const [radioChoice, setRadioChoice] = useState<'a' | 'b'>('a');
   const [toggleOn, setToggleOn] = useState(false);
   const [filterTraining, setFilterTraining] = useState(false);
+  const [selectedNav, setSelectedNav] = useState<'home' | 'trainings'>('home');
   const mode = dark ? 'athleteDark' : 'athleteLight';
   const theme = colors[mode];
 
@@ -55,6 +66,20 @@ export function DesignSystemPreview() {
       style={[styles.safeArea, { backgroundColor: theme.background }]}
     >
       <StatusBar barStyle={dark ? 'light-content' : 'dark-content'} />
+      <View style={[styles.fixedHeader, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+        <Text style={[styles.fixedHeaderTitle, { color: theme.text }]}>REMUS · QA</Text>
+        <Pressable
+          testID="theme-toggle"
+          accessibilityRole="button"
+          accessibilityLabel="Alternar tema Athlete"
+          onPress={() => setDark(value => !value)}
+          style={[styles.themeToggle, { borderColor: theme.primary }]}
+        >
+          <Text style={[styles.themeToggleLabel, { color: theme.primary }]}>
+            {dark ? 'Dark → Light' : 'Light → Dark'}
+          </Text>
+        </Pressable>
+      </View>
       <ScrollView
         testID="design-system-preview"
         style={styles.scroll}
@@ -65,17 +90,6 @@ export function DesignSystemPreview() {
         <Text style={[styles.description, { color: theme.secondaryText }]}>
           Primeiro átomo — Button / Primary. Catálogo local com dados simulados.
         </Text>
-        <Pressable
-          testID="theme-toggle"
-          accessibilityRole="button"
-          accessibilityLabel="Alternar tema Athlete"
-          onPress={() => setDark(value => !value)}
-          style={[styles.themeToggle, { borderColor: theme.border }]}
-        >
-          <Text style={[styles.themeToggleLabel, { color: theme.text }]}>
-            {dark ? 'Athlete Dark → Light' : 'Athlete Light → Dark'}
-          </Text>
-        </Pressable>
 
         <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Tamanhos</Text>
@@ -358,6 +372,95 @@ export function DesignSystemPreview() {
         </View>
 
         <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Status, identidade e navegação</Text>
+          <Text style={[styles.description, { color: theme.secondaryText }]}>
+            Weather / Avatar / Navigation · três átomos da biblioteca oficial.
+          </Text>
+          <RemusText variant="bodyMedium" mode={mode}>Condition Status</RemusText>
+          <View style={styles.presentationRow}>
+            {(['best', 'good', 'caution', 'notRecommended', 'uncertain'] as ConditionStatus[]).map(status => (
+              <RemusConditionStatus key={status} testID={`status-${status}`} status={status} mode={mode} />
+            ))}
+          </View>
+          <RemusText variant="bodyMedium" mode={mode}>Avatar</RemusText>
+          <View style={styles.presentationRow}>
+            <RemusAvatar initials="AE" size="medium" mode={mode} testID="avatar-medium" />
+            <RemusAvatar initials="AE" size="large" mode={mode} testID="avatar-large" />
+          </View>
+          <RemusText variant="bodyMedium" mode={mode}>Navigation Item</RemusText>
+          <View style={styles.presentationRow}>
+            <RemusNavigationItem icon="home" label="Home" testID="nav-home"
+              selected={selectedNav === 'home'} onPress={() => setSelectedNav('home')} mode={mode} />
+            <RemusNavigationItem icon="start" label="Treinos" testID="nav-trainings"
+              selected={selectedNav === 'trainings'} onPress={() => setSelectedNav('trainings')} mode={mode} />
+            <RemusNavigationItem icon="home" label="Disabled" testID="nav-disabled"
+              disabled onPress={() => setLastAction('ERRO: navigation disabled')} mode={mode} />
+          </View>
+        </View>
+
+        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Gráficos — primitivas</Text>
+          <Text style={[styles.description, { color: theme.secondaryText }]}>
+            Amostras oficiais de marcas e guias. Os gráficos com dados reais virão nas moléculas.
+          </Text>
+          <View style={styles.chartGrid}>
+            {chartMarkKinds.map(kind => (
+              <View key={kind} style={styles.chartExample}>
+                <RemusChartMark kind={kind} mode={mode} testID={`chart-mark-${kind}`} />
+                <RemusText mode={mode} variant="caption" tone="secondary">{kind}</RemusText>
+              </View>
+            ))}
+          </View>
+          <RemusText mode={mode} variant="bodyMedium">Chart Rules</RemusText>
+          <View style={styles.chartGrid}>
+            {chartRuleKinds.map(kind => (
+              <View key={kind} style={styles.chartExample}>
+                <RemusChartRule kind={kind} mode={mode} testID={`chart-rule-${kind}`} />
+                <RemusText mode={mode} variant="caption" tone="secondary">{kind}</RemusText>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Gravação — átomos</Text>
+          <Text style={[styles.description, { color: theme.secondaryText }]}>
+            Fontes, bateria e ações visuais da captura; sem iniciar ou finalizar treinos reais.
+          </Text>
+          <RemusText mode={mode} variant="bodyMedium">Source Badges</RemusText>
+          <View style={styles.captureRow}>
+            {sourceTypes.map(source => (
+              <View key={source} style={styles.captureExample}>
+                <RemusSourceBadge source={source} mode={mode} testID={`capture-source-${source}`} />
+                <RemusText mode={mode} variant="small" tone="secondary">{source}</RemusText>
+              </View>
+            ))}
+          </View>
+          <RemusText mode={mode} variant="bodyMedium">Battery Status</RemusText>
+          <View style={styles.captureRow}>
+            {batteryConditions.map(condition => (
+              <View key={condition} style={styles.captureExample}>
+                <RemusBatteryStatus condition={condition} mode={mode} testID={`capture-battery-${condition}`} />
+                <RemusText mode={mode} variant="small" tone="secondary">{condition}</RemusText>
+              </View>
+            ))}
+          </View>
+          <RemusText mode={mode} variant="bodyMedium">Capture FAB</RemusText>
+          <View style={styles.captureRow}>
+            <View style={styles.captureExample}>
+              <RemusCaptureFab action="pause" mode={mode} accessibilityLabel="Simular pausa"
+                testID="capture-pause" onPress={() => setLastAction('Preview: pausar gravação')} />
+              <RemusText mode={mode} variant="caption" tone="secondary">Pause</RemusText>
+            </View>
+            <View style={styles.captureExample}>
+              <RemusCaptureFab action="finish" mode={mode} accessibilityLabel="Simular fim"
+                testID="capture-finish" onPress={() => setLastAction('Preview: finalizar gravação')} />
+              <RemusText mode={mode} variant="caption" tone="secondary">Finish</RemusText>
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Estados</Text>
           <Text style={[styles.description, { color: theme.secondaryText }]}>
             Pressione e segure o botão ativo para ver Pressed.
@@ -388,15 +491,12 @@ const styles = StyleSheet.create({
   eyebrow: { ...typography.caption, fontWeight: '600', marginBottom: spacing.sm },
   heading: { fontSize: 30, lineHeight: 36, fontWeight: '700', marginBottom: spacing.sm },
   description: { ...typography.body, marginBottom: spacing.md },
-  themeToggleLabel: { fontWeight: '600' },
-  themeToggle: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-  },
+  fixedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderBottomWidth: 1 },
+  fixedHeaderTitle: { ...typography.caption, fontWeight: '700' },
+  themeToggleLabel: { fontWeight: '600', fontSize: 14 },
+  themeToggle: { borderWidth: 1, borderRadius: radius.md,
+    paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
   panel: {
     borderWidth: 1,
     borderRadius: radius.lg,
@@ -410,6 +510,11 @@ const styles = StyleSheet.create({
   selectionRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.md, marginTop: spacing.sm, gap: spacing.sm },
   selectionExample: { minWidth: 72, alignItems: 'center', gap: spacing.xs },
   chipRow: { gap: spacing.sm },
+  presentationRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm, marginBottom: spacing.md },
+  chartGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
+  chartExample: { alignItems: 'center', width: 220, gap: spacing.xs },
+  captureRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginVertical: spacing.md },
+  captureExample: { width: 66, alignItems: 'center', gap: spacing.xs },
   iconGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   iconExample: { width: 105, alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   iconButtonGrid: { flexDirection: 'row', flexWrap: 'wrap' },
