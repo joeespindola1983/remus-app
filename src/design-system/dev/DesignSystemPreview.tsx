@@ -21,6 +21,7 @@ import { RemusCaptureFab } from '../atoms/RemusCaptureFab';
 import { chartMarkKinds, chartRuleKinds, batteryConditions, sourceTypes } from '../atoms/remusChartCaptureStyle';
 import { type ConditionStatus } from '../atoms/remusPresentationStyle';
 import { type RemusIconName } from '../atoms/remusIconDefinition';
+import { MoleculePreview } from './MoleculePreview';
 import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
 
@@ -48,6 +49,7 @@ const iconExamples: ReadonlyArray<{ name: RemusIconName; label: string }> = [
 
 export function DesignSystemPreview() {
   const [dark, setDark] = useState(false);
+  const [gallery, setGallery] = useState<'atoms' | 'molecules'>('atoms');
   const [lastAction, setLastAction] = useState('Nenhum botão acionado');
   const [fieldValue, setFieldValue] = useState('');
   const [errorValue, setErrorValue] = useState('');
@@ -80,7 +82,17 @@ export function DesignSystemPreview() {
           </Text>
         </Pressable>
       </View>
-      <ScrollView
+      <View style={[styles.galleryTabs, { borderBottomColor: theme.border }]}>
+        <Pressable accessibilityRole="button" accessibilityState={{ selected: gallery === 'atoms' }}
+          testID="gallery-atoms" onPress={() => setGallery('atoms')} style={styles.galleryTab}>
+          <Text style={[styles.galleryTabText, { color: gallery === 'atoms' ? theme.primary : theme.text }]}>Átomos</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityState={{ selected: gallery === 'molecules' }}
+          testID="gallery-molecules" onPress={() => setGallery('molecules')} style={styles.galleryTab}>
+          <Text style={[styles.galleryTabText, { color: gallery === 'molecules' ? theme.primary : theme.text }]}>Moléculas</Text>
+        </Pressable>
+      </View>
+      {gallery === 'molecules' ? <MoleculePreview mode={mode} /> : <ScrollView
         testID="design-system-preview"
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -479,13 +491,16 @@ export function DesignSystemPreview() {
         <Text style={[styles.footer, { color: theme.secondaryText }]}>
           Próximos incrementos: outros átomos e componentes compostos.
         </Text>
-      </ScrollView>
+      </ScrollView>}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
+  galleryTabs: { flexDirection: 'row', borderBottomWidth: 1 },
+  galleryTab: { flex: 1, alignItems: 'center', paddingVertical: 8 },
+  galleryTabText: { fontSize: 14, fontWeight: '600' },
   scroll: { flex: 1 },
   content: { padding: spacing.lg, paddingBottom: spacing.x3l },
   eyebrow: { ...typography.caption, fontWeight: '600', marginBottom: spacing.sm },
