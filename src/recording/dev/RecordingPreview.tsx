@@ -22,6 +22,7 @@ export function RecordingPreview({mode, adapter}: RecordingPreviewProps) {
   const theme = colors[mode];
   const [isRecording, setIsRecording] = useState(false);
   const [activityId, setActivityId] = useState<string | undefined>();
+  const [lastActivityId, setLastActivityId] = useState<string | undefined>();
   const [permissionStatus, setPermissionStatus] = useState<string>('undetermined');
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
   const [hardwareProfile, setHardwareProfile] = useState<PhoneHardwareProfile>({});
@@ -35,6 +36,9 @@ export function RecordingPreview({mode, adapter}: RecordingPreviewProps) {
       const state = await adapter.getState();
       setIsRecording(state.isRecording);
       setActivityId(state.activityId);
+      if (state.activityId) {
+        setLastActivityId(state.activityId);
+      }
 
       const perm = await adapter.getLocationPermissionStatus();
       setPermissionStatus(perm);
@@ -79,6 +83,7 @@ export function RecordingPreview({mode, adapter}: RecordingPreviewProps) {
       const result = await adapter.start();
       setIsRecording(true);
       setActivityId(result.activityId);
+      setLastActivityId(result.activityId);
       setLastResult(t('recording.activityId', {id: result.activityId}));
     } catch (err) {
       setLastError(err instanceof Error ? err.message : String(err));
@@ -94,6 +99,7 @@ export function RecordingPreview({mode, adapter}: RecordingPreviewProps) {
       const manifest = await adapter.stop();
       setIsRecording(false);
       setActivityId(undefined);
+      setLastActivityId(manifest.activityId);
       setLastResult(
         `${t('recording.status.idle')} · ${manifest.status} (${manifest.sampleCounts?.phoneMotion ?? 0} motion, ${manifest.sampleCounts?.phoneLocation ?? 0} GPS)`,
       );
@@ -108,7 +114,9 @@ export function RecordingPreview({mode, adapter}: RecordingPreviewProps) {
     setLoading(true);
     setLastError(undefined);
     try {
-      const result = await adapter.exportRecording();
+      const result = await adapter.exportRecording(
+        lastActivityId ? {activityId: lastActivityId} : undefined,
+      );
       setLastResult(t('recording.exportSuccess', {path: result.zipPath}));
     } catch (err) {
       setLastError(err instanceof Error ? err.message : String(err));

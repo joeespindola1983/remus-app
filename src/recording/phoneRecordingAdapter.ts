@@ -451,7 +451,7 @@ export class PhoneRecordingAdapter {
     try {
       const raw = await this.executeWithTimeout(
         'export',
-        () => this.bridge!.exportRecording(activityId ? {activityId} : undefined),
+        () => this.bridge!.exportRecording(activityId ? {activityId} : {}),
         timeoutMs,
       );
 
