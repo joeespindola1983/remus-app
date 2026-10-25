@@ -1,0 +1,85 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+# Avoid linking a prebuilt Release-flavor React Core against Debug Fabric pods.
+# With Firebase resolved via SPM, build RN Core from source for all iOS configs.
+ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
+
+project 'RemusApp',
+  'Debug' => :debug,
+  'Debug QA' => :debug,
+  'Release' => :release,
+  'Release QA' => :release
+
+# React Native Firebase v26.4.0 resolves the Apple Firebase SDK via SPM.
+# Dynamic framework linkage is required in SPM mode.
+use_frameworks! :linkage => :dynamic
+
+target 'RemusApp' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+  end
+end
+
+# RNFB Crashlytics 26.4.0 (SPM) hardcodes PROJECT_DIR/GoogleService-Info.plist
+# for dSYM uploads. We keep a single iOS target and choose its plist by config.
+# Apply the adjustment after each `pod install` to avoid editing node_modules.
+post_integrate do |_installer|
+  require 'xcodeproj'
+
+  project = Xcodeproj::Project.open(File.join(__dir__, 'RemusApp.xcodeproj'))
+  target = project.targets.find { |candidate| candidate.name == 'RemusApp' }
+  raise 'RemusApp target not found in Xcode project' unless target
+
+  phase = target.shell_script_build_phases.find do |candidate|
+    candidate.name.to_s.include?('[RNFB] Crashlytics Configuration')
+  end
+  raise 'RNFB Crashlytics Configuration phase not found' unless phase
+
+  default_plist = '${PROJECT_DIR}/GoogleService-Info.plist'
+  original_script = phase.shell_script.to_s
+  unless original_script.include?(default_plist)
+    raise 'Unexpected Crashlytics script: default GoogleService-Info.plist path not found'
+  end
+
+  select_plist = <<~'SH'
+    # Remus: select correct Firebase app for Crashlytics dSYM upload.
+    case "${CONFIGURATION:-}" in
+      "Debug QA"|"Release QA") REMUS_FIREBASE_PLIST="${PROJECT_DIR}/Firebase/QA/GoogleService-Info.plist" ;;
+      "Debug"|"Release") REMUS_FIREBASE_PLIST="${PROJECT_DIR}/Firebase/Prod/GoogleService-Info.plist" ;;
+      *) echo "error: Unknown Remus iOS configuration: ${CONFIGURATION:-unset}" >&2; exit 1 ;;
+    esac
+    if [ ! -f "$REMUS_FIREBASE_PLIST" ]; then
+      echo "error: Firebase plist missing: $REMUS_FIREBASE_PLIST" >&2
+      exit 1
+    fi
+  SH
+
+  phase.shell_script = "#{select_plist}\n#{original_script.gsub(default_plist, '$REMUS_FIREBASE_PLIST')}"
+  phase.input_paths = (Array(phase.input_paths) + [
+    '$(PROJECT_DIR)/Firebase/QA/GoogleService-Info.plist',
+    '$(PROJECT_DIR)/Firebase/Prod/GoogleService-Info.plist'
+  ]).uniq
+  project.save
+  Pod::UI.puts '[Remus] Crashlytics dSYM upload configured for QA/Prod plists.'
+end

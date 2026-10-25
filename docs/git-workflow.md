@@ -43,7 +43,8 @@ git push origin develop
 
 - The initial `package.json` and `package-lock.json` version is `0.0.1`.
 - `v0.0.1` is a **Git annotated tag on `develop`** describing the completed QA bootstrap, not a Production release.
-- Future code increments use SemVer (`0.0.x` while the app is pre-release). Update npm manifests together when changing versions.
+- Future code increments use SemVer (`0.0.x` while the app is pre-release). A release version must be updated together in `package.json`, `package-lock.json`, Android `versionName` and every iOS `MARKETING_VERSION`; Android `versionCode` and every iOS `CURRENT_PROJECT_VERSION` must share the same increasing build number.
+- `npm run version:verify` enforces that contract and is part of `npm run verify`. A version commit or tag is blocked while any platform differs.
 - Preserve build-specific source maps externally when they are used for error diagnosis; do not version generated build directories.
 
 ## Commit conventions
