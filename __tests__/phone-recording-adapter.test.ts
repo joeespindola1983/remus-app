@@ -426,4 +426,73 @@ describe('PhoneRecordingAdapter (TDD 014A)', () => {
       await expect(adapter.start()).resolves.toBeDefined();
     });
   });
+
+  describe('Permissions, hardware profile and live telemetry updates', () => {
+    it('queries and requests location permissions through bridge', async () => {
+      const bridge = createMockBridge({
+        getLocationPermissionStatus: jest.fn().mockResolvedValue('granted'),
+        requestLocationPermission: jest.fn().mockResolvedValue('granted'),
+      });
+      const adapter = new PhoneRecordingAdapter(bridge);
+
+      await expect(adapter.getLocationPermissionStatus()).resolves.toBe('granted');
+      await expect(adapter.requestLocationPermission()).resolves.toBe('granted');
+      expect(bridge.getLocationPermissionStatus).toHaveBeenCalled();
+      expect(bridge.requestLocationPermission).toHaveBeenCalled();
+    });
+
+    it('queries battery level and hardware profile', async () => {
+      const bridge = createMockBridge({
+        getBatteryLevel: jest.fn().mockResolvedValue(88),
+        getPhoneHardwareProfile: jest.fn().mockResolvedValue({
+          hasGps: true,
+          hasAccelerometer: true,
+          hasGyroscope: true,
+          hasMagnetometer: true,
+          hasBarometer: false,
+        }),
+      });
+      const adapter = new PhoneRecordingAdapter(bridge);
+
+      await expect(adapter.getBatteryLevel()).resolves.toBe(88);
+      await expect(adapter.getPhoneHardwareProfile()).resolves.toEqual({
+        hasGps: true,
+        hasAccelerometer: true,
+        hasGyroscope: true,
+        hasMagnetometer: true,
+        hasBarometer: false,
+      });
+    });
+
+    it('subscribes to live recording projections and unsubscribes cleanly', () => {
+      const mockRemove = jest.fn();
+      const mockAddListener = jest.fn().mockReturnValue({remove: mockRemove});
+      const bridge = createMockBridge({
+        addListener: jest.fn(),
+        removeListeners: jest.fn(),
+      });
+      const mockEmitter = {
+        addListener: mockAddListener,
+      };
+      const adapter = new PhoneRecordingAdapter(bridge, {emitter: mockEmitter as any});
+      const listener = jest.fn();
+
+      const unsubscribe = adapter.onUpdate(listener);
+      expect(mockAddListener).toHaveBeenCalledWith('onRecordingUpdate', expect.any(Function));
+
+      const emittedPayload = {
+        elapsedSeconds: 10,
+        motionSampleCount: 1000,
+        locationSampleCount: 10,
+        distanceMeters: 45.2,
+      };
+      const registeredCallback = mockAddListener.mock.calls[0][1];
+      registeredCallback(emittedPayload);
+      expect(listener).toHaveBeenCalledWith(emittedPayload);
+
+      unsubscribe();
+      expect(mockRemove).toHaveBeenCalled();
+    });
+  });
 });
+

@@ -1,9 +1,12 @@
+import {NativeEventEmitter, NativeModules} from 'react-native';
 import {
   PHONE_PRIMARY_SOURCE_ID,
   NativePhoneRecordingBridge,
+  PhoneHardwareProfile,
   PhoneRecordingExportOptions,
   PhoneRecordingExportResult,
   PhoneRecordingManifest,
+  PhoneRecordingProjection,
   PhoneRecordingStartOptions,
   PhoneRecordingStartResult,
   PhoneRecordingState,
@@ -19,6 +22,7 @@ import {
 
 export interface PhoneRecordingAdapterOptions {
   defaultTimeoutMs?: number;
+  emitter?: NativeEventEmitter;
 }
 
 const DEFAULT_COMMAND_TIMEOUT_MS = 5000;
@@ -233,6 +237,7 @@ function normalizeExportResult(raw: unknown): PhoneRecordingExportResult {
 
 export class PhoneRecordingAdapter {
   private readonly bridge?: NativePhoneRecordingBridge;
+  private readonly emitter?: NativeEventEmitter;
   private readonly defaultTimeoutMs: number;
 
   private inFlightCommand: 'start' | 'stop' | 'export' | 'state' | null = null;
@@ -240,10 +245,15 @@ export class PhoneRecordingAdapter {
   private unknownState: boolean = false;
 
   constructor(
-    bridge?: NativePhoneRecordingBridge,
+    bridge: NativePhoneRecordingBridge | undefined = NativeModules.RemusRecordingBridge,
     options: PhoneRecordingAdapterOptions = {},
   ) {
     this.bridge = bridge;
+    this.emitter =
+      options.emitter ??
+      (bridge && typeof bridge.addListener === 'function'
+        ? new NativeEventEmitter(bridge as never)
+        : undefined);
     this.defaultTimeoutMs = options.defaultTimeoutMs ?? DEFAULT_COMMAND_TIMEOUT_MS;
   }
 
@@ -458,4 +468,50 @@ export class PhoneRecordingAdapter {
       this.inFlightCommand = null;
     }
   }
+
+  async getLocationPermissionStatus(): Promise<string> {
+    if (!this.bridge) {
+      throw new RecordingUnavailableError();
+    }
+    if (!this.bridge.getLocationPermissionStatus) {
+      return 'undetermined';
+    }
+    return this.bridge.getLocationPermissionStatus();
+  }
+
+  async requestLocationPermission(): Promise<string> {
+    if (!this.bridge) {
+      throw new RecordingUnavailableError();
+    }
+    if (!this.bridge.requestLocationPermission) {
+      return 'undetermined';
+    }
+    return this.bridge.requestLocationPermission();
+  }
+
+  async getBatteryLevel(): Promise<number | null> {
+    if (!this.bridge?.getBatteryLevel) {
+      return null;
+    }
+    return this.bridge.getBatteryLevel();
+  }
+
+  async getPhoneHardwareProfile(): Promise<PhoneHardwareProfile> {
+    if (!this.bridge?.getPhoneHardwareProfile) {
+      return {};
+    }
+    return this.bridge.getPhoneHardwareProfile();
+  }
+
+  onUpdate(listener: (projection: PhoneRecordingProjection) => void): () => void {
+    if (!this.emitter) {
+      return () => undefined;
+    }
+    const subscription = this.emitter.addListener(
+      'onRecordingUpdate',
+      payload => listener(payload as PhoneRecordingProjection),
+    );
+    return () => subscription.remove();
+  }
 }
+

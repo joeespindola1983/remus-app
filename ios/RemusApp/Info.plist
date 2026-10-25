@@ -35,7 +35,15 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Remus precisa de acesso à sua localização para gravar suas rotas e atividades esportivas.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Remus precisa de acesso contínuo à localização em segundo plano para rastrear seus treinos mesmo com a tela bloqueada.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Remus utiliza os sensores de movimento e acelerômetro para monitorar sua atividade física e deslocamento.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
