@@ -38,6 +38,24 @@ Simulator/device checklist:
 6. Relaunch the app after recording the non-fatal, then confirm `REMUS QA non-fatal probe` in Crashlytics for the QA app; Firebase sends recorded non-fatals on the next launch.
 7. Leave both channels enabled when finishing this temporary QA test.
 
+## Local diagnostic journal — 013C
+
+`remus.sqlite` stores a bounded, low-frequency technical journal using `react-native-nitro-sqlite`. The app uses explicit SQL and its own migrations; it does not use an ORM. `better-sqlite3` is development-only and lets Jest exercise the same migrations, constraints and transactions against a real SQLite engine.
+
+The initial journal accepts only three typed event shapes: app startup, an applied collection choice and the outcome of a QA probe. There is no free-text field. Coordinates, routes, health data, email, names, tokens, device identifiers, error messages and raw sensor payloads cannot be appended through this contract. Malformed rows are omitted from reads and exports.
+
+Retention is enforced after every transactional insert: at most 200 entries and 64 KiB of stored event data, with the oldest entries removed first. The database is not treated as encrypted storage; the privacy boundary is the strict allowlist. Export is created only when the user presses **Compartilhar journal** in the debug diagnostics view.
+
+This SQLite database is also the intended home for future recording manifests, session state, checkpoints and recovery indexes. High-frequency GPS/IMU samples do **not** belong in the diagnostic table and must not be funneled through React Native one row at a time. The Phone Recorder design will benchmark native chunk/file persistence separately.
+
+Journal QA checklist:
+
+1. Open **Diagnóstico** and confirm the journal count loads without blocking the other controls.
+2. Run one Analytics or non-fatal probe and confirm the count increases.
+3. Relaunch the app and confirm the previous entries remain and `app_started` adds one entry.
+4. Press **Compartilhar journal** and inspect the JSON before choosing any destination. Confirm it contains only the documented event fields.
+5. Cancel the share sheet; cancellation must not alter or clear the journal.
+
 ## Tests
 
 ```sh

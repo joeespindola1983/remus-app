@@ -1,9 +1,10 @@
-import React, {useState} from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {ScrollView, Share, StyleSheet, Text, View} from 'react-native';
 import {PrimaryButton} from '../../design-system/atoms/PrimaryButton';
 import {RemusToggle} from '../../design-system/atoms/RemusToggle';
 import {colors, radius, spacing, typography, type DesignColorMode} from '../../design-system/tokens';
 import {type RemusTelemetryEvent, type TelemetryCollectionConsent} from '../telemetry';
+import {type DiagnosticJournal} from '../diagnosticJournal';
 import {
   type TelemetryCollectionControl,
   type TelemetryCollectionResult,
@@ -18,6 +19,7 @@ export type ObservabilityPreviewProps = {
   mode: DesignColorMode;
   collectionControl: Pick<TelemetryCollectionControl, 'readConsent' | 'applyConsent'>;
   diagnostics: ObservabilityDiagnostics;
+  journal: Pick<DiagnosticJournal, 'append' | 'read' | 'exportJson'>;
 };
 
 export type ObservabilityPreviewDependencies = Omit<ObservabilityPreviewProps, 'mode'>;
@@ -26,11 +28,36 @@ const resultLabel = (result: TelemetryCollectionResult) =>
   `Analytics: ${result.analytics === 'applied' ? 'aplicado' : 'falhou'} · ` +
   `Crash: ${result.crashReporting === 'applied' ? 'aplicado' : 'falhou'}`;
 
-export function ObservabilityPreview({mode, collectionControl, diagnostics}: ObservabilityPreviewProps) {
+export function ObservabilityPreview({mode, collectionControl, diagnostics, journal}: ObservabilityPreviewProps) {
   const theme = colors[mode];
   const [consent, setConsent] = useState<TelemetryCollectionConsent>(() => collectionControl.readConsent());
   const [pending, setPending] = useState(false);
   const [lastResult, setLastResult] = useState('Nenhuma operação executada.');
+  const [journalStatus, setJournalStatus] = useState('Carregando journal local...');
+
+  const refreshJournal = async () => {
+    try {
+      const entries = await journal.read();
+      setJournalStatus(`Journal local: ${entries.length} evento(s).`);
+    } catch {
+      setJournalStatus('Journal local indisponível.');
+    }
+  };
+
+  const appendJournal = (event: Parameters<DiagnosticJournal['append']>[0]) => {
+    // Local diagnostics are best-effort and must never block app controls.
+    journal.append(event).catch(() => undefined).then(refreshJournal);
+  };
+
+  useEffect(() => {
+    let active = true;
+    journal.read().then(entries => {
+      if (active) {setJournalStatus(`Journal local: ${entries.length} evento(s).`);}
+    }).catch(() => {
+      if (active) {setJournalStatus('Journal local indisponível.');}
+    });
+    return () => {active = false;};
+  }, [journal]);
 
   const applyConsent = async (next: TelemetryCollectionConsent) => {
     setPending(true);
@@ -38,17 +65,40 @@ export function ObservabilityPreview({mode, collectionControl, diagnostics}: Obs
     const result = await collectionControl.applyConsent(next);
     setConsent(result.effective);
     setLastResult(resultLabel(result));
+    appendJournal({
+      name: 'collection_consent_applied',
+      analytics: result.effective.analytics,
+      crashReporting: result.effective.crashReporting,
+      outcome: result.analytics === 'applied' && result.crashReporting === 'applied'
+        ? 'applied'
+        : 'partial_failure',
+    });
     setPending(false);
   };
 
   const runProbe = async () => {
     const delivered = await diagnostics.trackEvent({name: 'remus_qa_observability_probe'});
+    appendJournal({name: 'qa_probe_completed', channel: 'analytics', outcome: delivered ? 'accepted' : 'blocked'});
     setLastResult(delivered ? 'Evento QA aceito.' : 'Evento QA bloqueado ou indisponível.');
   };
 
   const runNonFatal = async () => {
     const delivered = await diagnostics.recordNonFatal(new Error('REMUS QA non-fatal probe'));
+    appendJournal({
+      name: 'qa_probe_completed',
+      channel: 'crash_reporting',
+      outcome: delivered ? 'accepted' : 'blocked',
+    });
     setLastResult(delivered ? 'Non-fatal QA aceito.' : 'Non-fatal QA bloqueado ou indisponível.');
+  };
+
+  const shareJournal = async () => {
+    try {
+      await Share.share({message: await journal.exportJson(), title: 'Remus QA · journal diagnóstico'});
+      setLastResult('Compartilhamento do journal solicitado.');
+    } catch {
+      setLastResult('Não foi possível compartilhar o journal.');
+    }
   };
 
   return <ScrollView style={styles.scroll} contentContainerStyle={styles.content} testID="observability-preview">
@@ -77,6 +127,16 @@ export function ObservabilityPreview({mode, collectionControl, diagnostics}: Obs
           value={consent.crashReporting} disabled={pending} mode={mode}
           onValueChange={crashReporting => applyConsent({...consent, crashReporting})}/>
       </View>
+    </View>
+
+    <View style={[styles.panel, {backgroundColor: theme.surface, borderColor: theme.border}]}>
+      <Text testID="observability-journal-status" style={[styles.caption, {color: theme.secondaryText}]}>
+        {journalStatus}
+      </Text>
+      <PrimaryButton testID="observability-journal-refresh" label="Atualizar journal" mode={mode}
+        onPress={refreshJournal}/>
+      <PrimaryButton testID="observability-journal-share" label="Compartilhar journal" mode={mode}
+        onPress={shareJournal}/>
     </View>
 
     <View style={[styles.panel, {backgroundColor: theme.surface, borderColor: theme.border}]}>
