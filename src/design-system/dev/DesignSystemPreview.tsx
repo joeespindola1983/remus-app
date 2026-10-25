@@ -26,6 +26,8 @@ import {
   ObservabilityPreview,
   type ObservabilityPreviewDependencies,
 } from '../../observability/dev/ObservabilityPreview';
+import { RecordingPreview } from '../../recording/dev/RecordingPreview';
+import { PhoneRecordingAdapter } from '../../recording/phoneRecordingAdapter';
 import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
 
@@ -51,9 +53,16 @@ const iconExamples: ReadonlyArray<{ name: RemusIconName; label: string }> = [
   { name: 'stop', label: 'Stop' },
 ];
 
-export function DesignSystemPreview({observability}: {observability?: ObservabilityPreviewDependencies}) {
+export function DesignSystemPreview({
+  observability,
+  recordingAdapter,
+}: {
+  observability?: ObservabilityPreviewDependencies;
+  recordingAdapter?: PhoneRecordingAdapter;
+}) {
   const [dark, setDark] = useState(false);
-  const [gallery, setGallery] = useState<'atoms' | 'molecules' | 'observability'>('atoms');
+  const [gallery, setGallery] = useState<'atoms' | 'molecules' | 'observability' | 'recording'>('atoms');
+  const [defaultAdapter] = useState(() => recordingAdapter ?? new PhoneRecordingAdapter());
   const [lastAction, setLastAction] = useState('Nenhum botão acionado');
   const [fieldValue, setFieldValue] = useState('');
   const [errorValue, setErrorValue] = useState('');
@@ -99,10 +108,16 @@ export function DesignSystemPreview({observability}: {observability?: Observabil
           testID="gallery-observability" onPress={() => setGallery('observability')} style={styles.galleryTab}>
           <Text style={[styles.galleryTabText, { color: gallery === 'observability' ? theme.primary : theme.text }]}>Diagnóstico</Text>
         </Pressable> : null}
+        <Pressable accessibilityRole="button" accessibilityState={{ selected: gallery === 'recording' }}
+          testID="gallery-recording" onPress={() => setGallery('recording')} style={styles.galleryTab}>
+          <Text style={[styles.galleryTabText, { color: gallery === 'recording' ? theme.primary : theme.text }]}>Gravação</Text>
+        </Pressable>
       </View>
       {gallery === 'molecules' ? <MoleculePreview mode={mode} />
         : gallery === 'observability' && observability
           ? <ObservabilityPreview mode={mode} {...observability}/>
+        : gallery === 'recording'
+          ? <RecordingPreview mode={mode} adapter={recordingAdapter ?? defaultAdapter} />
         : <ScrollView
         testID="design-system-preview"
         style={styles.scroll}
