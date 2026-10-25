@@ -16,9 +16,27 @@ One Firebase project `remus-fc856` hosts separate QA and Production apps for And
 
 `createTelemetry` accepts a function that reads the current Analytics and crash-reporting consent before every operation. Disabled channels never call their sink. If consent cannot be read, collection fails closed without affecting the app.
 
-The event union currently permits only `remus_app_started`, with no payload. New events and their allowlisted, low-cardinality fields must be added explicitly; coordinates, routes, health data, names, email, persistent device identifiers, tokens and raw sensor data do not belong in Analytics events.
+The event union permits `remus_app_started` and the payload-free `remus_qa_observability_probe`. The probe is exposed only by the debug gallery. New product events and their allowlisted, low-cardinality fields must be added explicitly; coordinates, routes, health data, names, email, persistent device identifiers, tokens and raw sensor data do not belong in Analytics events.
 
-This TypeScript gate controls calls made through the application boundary. Connecting it to Firebase SDK collection switches and persisted user preferences belongs to 013B; until that integration, the existing bootstrap behavior remains enabled for compatibility.
+The TypeScript gate and Firebase SDK collection switches are coordinated by `telemetryCollectionControl.ts`. Both channels are blocked while settings are being applied and any failed channel remains blocked. The existing bootstrap starts enabled for compatibility.
+
+## QA collection diagnostics — 013B
+
+The debug-only **Diagnóstico** tab can apply Analytics and Crashlytics collection settings, send one payload-free QA event and record one explicit non-fatal error. It never triggers a crash. The `App` and preview receive these dependencies from `index.js`, keeping Firebase out of their unit-test boundary.
+
+`firebase.json` explicitly enables Crashlytics in debug builds so the QA non-fatal probe reaches the native SDK on both platforms. Collection is still controlled at runtime by the diagnostic toggle; release behavior is unchanged by this debug-only switch.
+
+The displayed choice is runtime QA state, not a persisted product consent preference. Firebase SDK setters may retain their native setting between launches, while the QA controller currently starts from the bootstrap default. Re-enable both channels after a disabled-path test. Persisted user preference, startup reconciliation and production consent UX remain separate future work.
+
+Simulator/device checklist:
+
+1. Open `Diagnóstico` in the debug gallery and confirm both controls are available.
+2. Disable Analytics; the event probe must become disabled. Re-enable it and send exactly one QA probe.
+3. Disable Crash Reporting; the non-fatal probe must become disabled. Re-enable it and record exactly one non-fatal.
+4. Confirm the status text after every operation. A native failure must show `falhou`, not crash or freeze the app.
+5. When Firebase console access is available, enable Analytics debug mode for the QA app and confirm `remus_qa_observability_probe` in DebugView.
+6. Relaunch the app after recording the non-fatal, then confirm `REMUS QA non-fatal probe` in Crashlytics for the QA app; Firebase sends recorded non-fatals on the next launch.
+7. Leave both channels enabled when finishing this temporary QA test.
 
 ## Tests
 

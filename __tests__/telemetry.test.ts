@@ -22,6 +22,13 @@ describe('Remus telemetry', () => {
     expect(sink.recordError).not.toHaveBeenCalled();
   });
 
+  it('supports one payload-free diagnostic event reserved for QA', async () => {
+    const sink = makeSink();
+    await expect(createTelemetry(sink).trackEvent({name: 'remus_qa_observability_probe'}))
+      .resolves.toBe(true);
+    expect(sink.logEvent).toHaveBeenCalledWith({name: 'remus_qa_observability_probe'});
+  });
+
   it('fails closed when Analytics consent is disabled', async () => {
     const sink = makeSink();
     const consent: TelemetryCollectionConsent = {analytics: false, crashReporting: true};
