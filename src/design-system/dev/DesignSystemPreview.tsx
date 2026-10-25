@@ -22,6 +22,10 @@ import { chartMarkKinds, chartRuleKinds, batteryConditions, sourceTypes } from '
 import { type ConditionStatus } from '../atoms/remusPresentationStyle';
 import { type RemusIconName } from '../atoms/remusIconDefinition';
 import { MoleculePreview } from './MoleculePreview';
+import {
+  ObservabilityPreview,
+  type ObservabilityPreviewDependencies,
+} from '../../observability/dev/ObservabilityPreview';
 import { RemusText } from '../atoms/RemusText';
 import { colors, radius, spacing, typography } from '../tokens';
 
@@ -47,9 +51,9 @@ const iconExamples: ReadonlyArray<{ name: RemusIconName; label: string }> = [
   { name: 'stop', label: 'Stop' },
 ];
 
-export function DesignSystemPreview() {
+export function DesignSystemPreview({observability}: {observability?: ObservabilityPreviewDependencies}) {
   const [dark, setDark] = useState(false);
-  const [gallery, setGallery] = useState<'atoms' | 'molecules'>('atoms');
+  const [gallery, setGallery] = useState<'atoms' | 'molecules' | 'observability'>('atoms');
   const [lastAction, setLastAction] = useState('Nenhum botão acionado');
   const [fieldValue, setFieldValue] = useState('');
   const [errorValue, setErrorValue] = useState('');
@@ -91,8 +95,15 @@ export function DesignSystemPreview() {
           testID="gallery-molecules" onPress={() => setGallery('molecules')} style={styles.galleryTab}>
           <Text style={[styles.galleryTabText, { color: gallery === 'molecules' ? theme.primary : theme.text }]}>Moléculas</Text>
         </Pressable>
+        {observability ? <Pressable accessibilityRole="button" accessibilityState={{ selected: gallery === 'observability' }}
+          testID="gallery-observability" onPress={() => setGallery('observability')} style={styles.galleryTab}>
+          <Text style={[styles.galleryTabText, { color: gallery === 'observability' ? theme.primary : theme.text }]}>Diagnóstico</Text>
+        </Pressable> : null}
       </View>
-      {gallery === 'molecules' ? <MoleculePreview mode={mode} /> : <ScrollView
+      {gallery === 'molecules' ? <MoleculePreview mode={mode} />
+        : gallery === 'observability' && observability
+          ? <ObservabilityPreview mode={mode} {...observability}/>
+        : <ScrollView
         testID="design-system-preview"
         style={styles.scroll}
         contentContainerStyle={styles.content}

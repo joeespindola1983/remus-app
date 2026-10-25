@@ -1,5 +1,7 @@
 /** Provider-independent observability boundary. Safe to exercise without an SDK. */
-export type RemusTelemetryEvent = Readonly<{name: 'remus_app_started'}>;
+export type RemusTelemetryEvent = Readonly<{
+  name: 'remus_app_started' | 'remus_qa_observability_probe';
+}>;
 
 export type TelemetryCollectionConsent = Readonly<{
   analytics: boolean;
