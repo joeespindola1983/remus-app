@@ -140,6 +140,7 @@ describe('PhoneRecordingAdapter (TDD 014A)', () => {
 
       // 3. Export
       const exportResult = await adapter.exportRecording();
+      expect(bridge.exportRecording).toHaveBeenCalledWith({});
       expect(exportResult.zipPath).toBe(
         '/data/user/0/com.espindola.remus.recorder/files/RemusExport/activity-android-001.zip',
       );
