@@ -53,3 +53,5 @@ The project uses a QA-first adaptation of GitFlow:
 The initial `v0.0.1` tag marks the **QA bootstrap baseline on `develop`**; it is **not** a Production release. See [docs/git-workflow.md](docs/git-workflow.md) for branch and tagging conventions.
 
 Additional technical notes: [docs/observability.md](docs/observability.md).
+
+Recording roadmap: [integration with Remus Recorder](docs/recording-integration-plan.md).
